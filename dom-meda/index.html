@@ -179,6 +179,52 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 .pb.f{background:var(--yellow);border-color:var(--yellow);color:var(--on-yellow)}
 .pb:hover{transform:translateY(-2px)}
 @media (max-width:760px){.payrow{justify-content:center}}
+
+/* пример-блоки для промо */
+.topr{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.open{display:inline-flex;align-items:center;gap:6px}
+.open::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--green)}
+.open.off::before{background:#C0504D}
+.bigbtn{min-height:30px;padding:0 12px;border:1.5px solid var(--head);border-radius:999px;background:transparent;color:var(--head);font:12px var(--body);cursor:pointer;transition:background .3s,color .3s}
+.bigbtn:hover,.bigbtn[aria-pressed="true"]{background:var(--head);color:var(--bg)}
+html.big{zoom:1.14}
+.tag{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:999px;background:var(--tint);color:var(--head);font-size:11px;letter-spacing:.08em;text-transform:uppercase;vertical-align:middle}
+.msgrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin:0 0 26px;color:var(--muted);font-size:14px}
+.msgrow .btn{min-height:42px;padding:0 20px;font-size:12px}
+.pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.pick div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:22px;display:grid;gap:6px;transition:transform .5s var(--ease),border-color .3s}
+.pick div:hover{transform:translateY(-4px);border-color:var(--yellow)}
+.pick b{font:400 20px var(--display);color:var(--head)}
+.pick span{color:var(--muted);font-size:15px}
+.pick i{font-style:normal;color:var(--green);font-size:14px}
+.about{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:center}
+.about p{color:var(--muted);margin:14px 0 0;max-width:52ch}
+.phs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ph{aspect-ratio:4/3;border-radius:6px;background:var(--tint);border:1.5px dashed var(--yellow);display:grid;place-items:center;align-content:center;gap:6px;text-align:center;padding:10px;color:var(--head);font-size:13px}
+.ph svg{width:44px;height:44px;fill:none;stroke:var(--head);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:860px){.about{grid-template-columns:1fr}}
+.docs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.doc{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px;display:grid;gap:10px;transition:transform .5s var(--ease)}
+.doc:hover{transform:translateY(-4px) rotate(-.6deg)}
+.doc .sheet{aspect-ratio:3/2;border-radius:4px;background:var(--tint);display:grid;place-items:center}
+.doc .sheet svg{width:62px;height:62px}
+.doc b{font:400 18px var(--display);color:var(--head)}
+.doc span{color:var(--muted);font-size:14px}
+.dtab{width:100%;border-collapse:collapse;margin-top:18px;font-size:15px;background:var(--surface)}
+.dtab th,.dtab td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
+.dtab th{background:var(--tint);color:var(--head);font-weight:400;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.tw{overflow-x:auto}
+.dt2{font-size:14px;color:var(--muted)}
+.dt2 summary{cursor:pointer;color:var(--head);padding:6px 0;list-style:none}
+.dt2 summary::before{content:"+ "}
+.dt2[open] summary::before{content:"− "}
+.dt2 p{margin:4px 0 0}
+.callbar{display:none}
+@media (max-width:760px){
+ .callbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--bg);padding:10px max(16px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));border-top:1px solid var(--line)}
+ .callbar .btn{justify-content:center;min-height:48px;padding:0 10px}
+ footer{padding-bottom:96px}
+}
 @media (prefers-reduced-motion:reduce){.hero-art .cloud{animation:none}.card{animation:none}.fly{display:none}}
 
 </style></head><body>
@@ -186,7 +232,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 <div class="wrap">
   <div class="top">
     <a href="#contacts">Республика Алтай, с. Усть-Кокса, ул. Мичурина, 1-В</a>
-    <span>тел. +7-913-698-0963</span>
+    <span class="topr"><span class="open" id="open"></span><button type="button" class="bigbtn" id="big" aria-pressed="false">Крупнее</button><span>тел. +7-913-698-0963</span></span>
   </div>
   <div class="brand">
     <svg viewBox="0 0 320 150" role="img" aria-label="Логотип Дом мёда (место для настоящего логотипа)">
@@ -292,10 +338,49 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
       <button type="button" class="chip on" data-f="all">Все</button>
       <button type="button" class="chip" data-f="honey">Мёд</button>
       <button type="button" class="chip" data-f="tea">Чаи</button>
+      <button type="button" class="chip" data-f="gift">Наборы</button>
     </div>
     <p class="more">Ещё в каталоге: травы, пыльца, перга, прополис, подмор, соты.</p>
+    <div class="msgrow"><span>Проще написать? Закажите в мессенджере:</span><a class="btn g" href="https://t.me/" target="_blank" rel="noopener">Telegram</a><a class="btn o" href="https://max.ru/" target="_blank" rel="noopener">MAX</a><a class="btn o" href="https://vk.com/" target="_blank" rel="noopener">ВКонтакте</a></div>
     <div class="grid" id="grid"></div>
     <p class="note">Макет оформления. Фасовки одинаковые для всего мёда (250 г, 500 г, 1 кг), цены примерные, ориентир по сайту medom-v-uho.ru, где указаны диапазоны. Корзина показывает, как это будет работать, оплата не подключена.</p>
+  </section>
+
+  <section id="choose" style="padding-top:8px">
+    <div class="sec-h"><div class="eyebrow">Подсказка</div><h2 style="margin-top:8px">Как выбрать мёд <span class="tag">пример текста</span></h2></div>
+    <div class="pick">
+      <div><b>К чаю каждый день</b><span>Мягкий цветочный вкус, подходит всей семье.</span><i>Мёд Цветочный →</i></div>
+      <div><b>Для выпечки и каши</b><span>Светлый, нежный, не перебивает вкус.</span><i>Мёд Васильковый →</i></div>
+      <div><b>С травяным ароматом</b><span>Заметная пряная нота и насыщенный цвет.</span><i>Мёд Дягиль →</i></div>
+      <div><b>В подарок</b><span>Высокогорный мёд или набор в подарочной упаковке.</span><i>Мёд Высокогорный →</i></div>
+    </div>
+  </section>
+
+  <section id="about" style="padding-top:8px">
+    <div class="about">
+      <div>
+        <div class="eyebrow">О нас</div>
+        <h2 style="margin-top:8px">Мёд с Алтая, от своей пасеки <span class="tag">пример текста</span></h2>
+        <p>Здесь будет короткая история от владельца: с какого года держат пасеку, как собирают травы и почему выбрали Усть-Коксу. Пара абзацев своими словами, без громких обещаний.</p>
+        <p>Рядом настоящие фото: хозяин, пасека, банки на полке и сам домик.</p>
+      </div>
+      <div class="phs" role="group" aria-label="Места для фотографий">
+        <div class="ph"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="15" r="7"/><path d="M8 42c2-10 9-15 16-15s14 5 16 15"/></svg>Фото хозяина</div>
+        <div class="ph"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40h36M10 40V26l14-10 14 10v14"/><path d="M20 40V30h8v10"/></svg>Пасека</div>
+        <div class="ph"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 38h36M12 38V22h10v16M26 38V16h10v22"/></svg>Банки на полке</div>
+        <div class="ph"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 24L24 8l18 16"/><path d="M12 22v18h24V22"/><path d="M20 40V30h8v10"/></svg>Магазин</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="docs" style="padding-top:8px">
+    <div class="sec-h"><div class="eyebrow">Подтверждено документами</div><h2 style="margin-top:8px">Качество можно проверить</h2></div>
+    <div class="docs">
+      <div class="doc"><div class="sheet"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 6h18l8 8v28H12z" fill="#FFF7DF" stroke="#520113"/><path d="M30 6v8h8M17 22h16M17 28h16M17 34h10" stroke="#520113"/></svg></div><b>Декларация соответствия</b><span>Скан настоящего документа <span class="tag">образец</span></span></div>
+      <div class="doc"><div class="sheet"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 6h18l8 8v28H12z" fill="#FFF7DF" stroke="#520113"/><path d="M30 6v8h8M17 22h16M17 28h16" stroke="#520113"/><circle cx="31" cy="35" r="5" fill="#FFCD2A" stroke="#520113"/></svg></div><b>Ветеринарная справка</b><span>Скан настоящего документа <span class="tag">образец</span></span></div>
+      <div class="doc"><div class="sheet"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 6h18l8 8v28H12z" fill="#FFF7DF" stroke="#520113"/><path d="M30 6v8h8M17 24h6M17 30h14" stroke="#520113"/><path d="M26 22l4 6 4-6" stroke="#80B500"/></svg></div><b>Анализ мёда в лаборатории</b><span>Скан настоящего документа <span class="tag">образец</span></span></div>
+    </div>
+    <p class="note">Это пример блока. Сюда встанут сканы настоящих документов клиента.</p>
   </section>
 
   <section id="reviews" style="padding-bottom:70px">
@@ -315,7 +400,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
       <div class="contact"><small>Доставка</small><b>Почтой и транспортной компанией</b></div>
       <div class="contact"><small>Оплата</small><b>Картами МИР и Сбербанка, по СБП или при получении</b></div>
     </div>
-    <p class="note" style="text-align:left">Условия доставки и оплаты здесь примерные, уточним у владельца.</p>
+    <div class="tw"><table class="dtab"><thead><tr><th>Куда</th><th>Как</th><th>Срок</th><th>Стоимость</th></tr></thead><tbody>
+      <tr><td>Усть-Кокса</td><td>Самовывоз из магазина</td><td>В день заказа</td><td>Бесплатно</td></tr>
+      <tr><td>Республика Алтай</td><td>Почта России</td><td>3–6 дней</td><td>от 350 ₽</td></tr>
+      <tr><td>Вся Россия</td><td>Транспортная компания</td><td>5–12 дней</td><td>от 450 ₽</td></tr></tbody></table></div>
+    <p class="note" style="text-align:left">Сроки и стоимость в таблице примерные, уточним у владельца.</p>
   </section>
 
   <section id="contacts" style="padding-top:0">
@@ -331,23 +420,29 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 </div>
 
 <footer><div class="wrap">
-  <span>Дом мёда, 2026. Тестовый макет, не официальный сайт.</span>
+  <span>Дом мёда, 2026. Тестовый макет, не официальный сайт.<br>Мы в сети: <a href="https://vk.com/" target="_blank" rel="noopener" style="color:inherit">ВКонтакте</a> · <a href="https://max.ru/" target="_blank" rel="noopener" style="color:inherit">MAX</a> · <a href="https://t.me/" target="_blank" rel="noopener" style="color:inherit">Telegram</a></span>
   <a class="gm" href="https://gusevmade.ru" target="_blank" rel="noopener" aria-label="Дизайн и разработка: GusevMade">
     <span class="coin" aria-hidden="true"><svg viewBox="0 0 40 40"><defs><linearGradient id="gmG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6D98A"/><stop offset=".55" stop-color="#D9A441"/><stop offset="1" stop-color="#A8741F"/></linearGradient></defs><circle cx="20" cy="20" r="19" fill="url(#gmG)"/><circle cx="20" cy="20" r="15.5" fill="none" stroke="#FBE7B0" stroke-opacity=".7"/><text x="20" y="26.6" text-anchor="middle" font-family="Georgia,serif" font-size="19" font-weight="700" fill="#6B4410">G</text></svg></span>
     <span><small>Дизайн и разработка</small><b>GusevMade</b></span>
   </a>
 </div></footer>
 
+<div class="callbar"><a class="btn g" href="tel:+79136980963">Позвонить</a><a class="btn o" href="#contacts">Написать</a></div>
+
 <script>
 var SZ=['250 г','500 г','1 кг']; /* единые фасовки для всего мёда, меняются в одном месте */
+var DH='Состав: натуральный мёд, без добавок. Сбор: лето 2026. Срок годности: 24 месяца при хранении до +20 °C. (пример)';
+var DT='Состав: алтайские травы. Фасовка: 50 г. Срок годности: 18 месяцев. (пример)';
 var items=[
- {n:'Мёд Высокогорный',p:[580,950,1400],k:'jar',c:'honey'},
- {n:'Мёд Дягиль',p:[600,980,1500],k:'jar2',c:'honey'},
- {n:'Мёд Васильковый',p:[360,600,950],k:'jar3',c:'honey'},
- {n:'Мёд Цветочный',p:[350,580,850],k:'jar4',c:'honey'},
- {n:'Медовая композиция с кедровой живицей',p:[800],k:'jar',c:'honey'},
- {n:'Травяной чай «Пороги Катуни»',p:[280],k:'pack',c:'tea'},
- {n:'Травяной чай «Дар Беловодья»',p:[280],k:'pack2',c:'tea'}
+ {n:'Мёд Высокогорный',p:[580,950,1400],k:'jar',c:'honey',d:DH},
+ {n:'Мёд Дягиль',p:[600,980,1500],k:'jar2',c:'honey',d:DH},
+ {n:'Мёд Васильковый',p:[360,600,950],k:'jar3',c:'honey',d:DH},
+ {n:'Мёд Цветочный',p:[350,580,850],k:'jar4',c:'honey',d:DH},
+ {n:'Медовая композиция с кедровой живицей',p:[800],k:'jar',c:'honey',d:'Состав: мёд и кедровая живица. Срок годности: 12 месяцев. (пример)'},
+ {n:'Травяной чай «Пороги Катуни»',p:[280],k:'pack',c:'tea',d:DT},
+ {n:'Травяной чай «Дар Беловодья»',p:[280],k:'pack2',c:'tea',d:DT},
+ {n:'Новогодний набор: мёд и чай',p:[1450],k:'box',c:'gift',d:'В наборе: мёд 250 г, травяной чай, подарочная упаковка. (пример)'},
+ {n:'Набор для чая',p:[990],k:'box2',c:'gift',d:'В наборе: два травяных чая и мёд 250 г. (пример)'}
 ];
 var art={
  jar:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="#FFCD2A" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#E6A817" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/><path d="M50 66l8 14H42z" fill="#5B7F3A"/></svg>',
@@ -355,7 +450,9 @@ var art={
  jar3:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="#FFCD2A" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#C9A227" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/><path d="M50 66l8 14H42z" fill="#5B7F3A"/></svg>',
  jar4:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="#FFCD2A" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#F2C94C" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/><path d="M50 66l8 14H42z" fill="#5B7F3A"/></svg>',
  pack:'<svg viewBox="0 0 100 130"><rect x="18" y="12" width="64" height="106" rx="5" fill="#8A5230" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="26" width="48" height="34" fill="#FFF7DF"/><path d="M26 56l14-14 10 10 10-16 14 20z" fill="#5B7F3A"/><rect x="28" y="72" width="44" height="3" fill="#FFF7DF" opacity=".8"/><rect x="28" y="82" width="34" height="3" fill="#FFF7DF" opacity=".8"/></svg>',
- pack2:'<svg viewBox="0 0 100 130"><rect x="18" y="12" width="64" height="106" rx="5" fill="#6E8A4F" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="26" width="48" height="34" fill="#FFF7DF"/><circle cx="62" cy="38" r="6" fill="#FFCD2A"/><path d="M26 56l16-12 12 8 12-10 8 14z" fill="#8A5230" fill-opacity=".85"/><rect x="28" y="72" width="44" height="3" fill="#FFF7DF" opacity=".8"/><rect x="28" y="82" width="34" height="3" fill="#FFF7DF" opacity=".8"/></svg>'
+ pack2:'<svg viewBox="0 0 100 130"><rect x="18" y="12" width="64" height="106" rx="5" fill="#6E8A4F" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="26" width="48" height="34" fill="#FFF7DF"/><circle cx="62" cy="38" r="6" fill="#FFCD2A"/><path d="M26 56l16-12 12 8 12-10 8 14z" fill="#8A5230" fill-opacity=".85"/><rect x="28" y="72" width="44" height="3" fill="#FFF7DF" opacity=".8"/><rect x="28" y="82" width="34" height="3" fill="#FFF7DF" opacity=".8"/></svg>',
+ box:'<svg viewBox="0 0 100 130"><rect x="14" y="52" width="72" height="62" rx="4" fill="#80B500"/><rect x="10" y="38" width="80" height="22" rx="4" fill="#9AD21A"/><rect x="44" y="38" width="12" height="76" fill="#FFCD2A"/><path d="M50 38c-16-22-30-6-18 0M50 38c16-22 30-6 18 0" fill="none" stroke="#FFCD2A" stroke-width="6" stroke-linecap="round"/></svg>',
+ box2:'<svg viewBox="0 0 100 130"><rect x="14" y="52" width="72" height="62" rx="4" fill="#8A5230"/><rect x="10" y="38" width="80" height="22" rx="4" fill="#A56A3E"/><rect x="44" y="38" width="12" height="76" fill="#FFF7DF"/><path d="M50 38c-16-22-30-6-18 0M50 38c16-22 30-6 18 0" fill="none" stroke="#FFF7DF" stroke-width="6" stroke-linecap="round"/></svg>'
 };
 var count=0,sum=0,cn=document.getElementById('cn'),cs=document.getElementById('cs');
 function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₽'}
@@ -368,7 +465,7 @@ function fly(btn){if(calm)return;var r=btn.getBoundingClientRect(),c=cn.getBound
 items.forEach(function(it){
   var el=document.createElement('article');el.className='card';el.dataset.c=it.c;var si=it.p.length>1?1:0;
   var sizes=it.p.length>1?'<div class="sz" role="group" aria-label="Фасовка">'+it.p.map(function(_,i){return '<button type="button" aria-pressed="'+(i==si)+'" data-i="'+i+'">'+SZ[i]+'</button>'}).join('')+'</div>':'';
-  el.innerHTML='<div class="art">'+art[it.k]+'</div><div class="in"><h3>'+it.n+'</h3>'+sizes+'<div class="price">'+fmt(it.p[si])+'</div><button type="button" class="add">Добавить в корзину</button></div>';
+  el.innerHTML='<div class="art">'+art[it.k]+'</div><div class="in"><h3>'+it.n+'</h3>'+sizes+'<div class="price">'+fmt(it.p[si])+'</div><details class="dt2"><summary>Состав и срок годности</summary><p>'+it.d+'</p></details><button type="button" class="add">Добавить в корзину</button></div>';
   var pr=el.querySelector('.price'),b=el.querySelector('.add');
   el.querySelectorAll('.sz button').forEach(function(s){s.addEventListener('click',function(){
     si=+s.dataset.i;el.querySelectorAll('.sz button').forEach(function(x){x.setAttribute('aria-pressed',x===s)});
@@ -389,6 +486,15 @@ document.querySelectorAll('.chip').forEach(function(ch){
     document.querySelectorAll('.card').forEach(function(c){c.hidden=(f!=='all'&&c.dataset.c!==f)});
   });
 });
+(function(){var o=document.getElementById('open');
+ try{var f=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Barnaul',weekday:'short',hour:'numeric',minute:'numeric',hour12:false}).formatToParts(new Date()),g={};f.forEach(function(x){g[x.type]=x.value});
+  var sun=g.weekday==='Sun',h=+g.hour+ +g.minute/60,s=sun?10:9,e=sun?16:19;
+  if(h>=s&&h<e){o.textContent='Открыто сейчас до '+e+':00'}else{o.textContent='Сейчас закрыто, откроемся в '+s+':00';o.classList.add('off')}}
+ catch(x){o.textContent='Пн–Сб 9:00–19:00, Вс 10:00–16:00'}})();
+(function(){var b=document.getElementById('big'),h=document.documentElement;
+ function set(v){h.classList.toggle('big',v);b.setAttribute('aria-pressed',v);b.textContent=v?'Обычный':'Крупнее';try{localStorage.setItem('big',v?'1':'0')}catch(x){}}
+ try{if(localStorage.getItem('big')==='1')set(true)}catch(x){}
+ b.addEventListener('click',function(){set(!h.classList.contains('big'))})})();
 var revs=[['Невероятно вкусный мёд!!!','Татьяна'],['Отлично!','Иван']],ri=0;
 var rq=document.getElementById('rq'),rw=document.getElementById('rw');
 function show(d){ri=(ri+d+revs.length)%revs.length;rq.style.opacity=0;setTimeout(function(){rq.textContent=revs[ri][0];rw.textContent='— '+revs[ri][1];rq.style.opacity=1},300)}
