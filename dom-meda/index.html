@@ -147,6 +147,34 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 .more{text-align:center;color:var(--muted);font-size:14px;margin:14px 0 28px}
 .card[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.bee{display:none}}
+/* мини-эффекты, кнопки, выбор фасовки, карта */
+.btn,.add,.chip{position:relative;overflow:hidden;isolation:isolate}
+.btn::before,.add::before{content:"";position:absolute;inset:0;background:rgba(255,255,255,.26);transform:translateX(-101%);transition:transform .55s var(--ease);z-index:-1}
+.btn:hover::before,.add:hover::before{transform:none}
+.btn:active,.add:active{transform:scale(.96)}
+.btn{border-radius:999px}
+.btn::after{content:"";}
+.add{border-radius:999px;min-height:48px;width:100%}
+.chip{border-radius:999px}
+.card{border-radius:6px;animation:rise .7s var(--ease) both}
+@keyframes rise{from{transform:translateY(20px)}}
+.card:nth-child(2){animation-delay:.08s}.card:nth-child(3){animation-delay:.16s}.card:nth-child(4){animation-delay:.24s}.card:nth-child(5){animation-delay:.32s}.card:nth-child(6){animation-delay:.4s}
+.card .art svg{transition:transform .7s var(--ease)}
+.card:hover .art svg{transform:translateY(-6px) rotate(-3deg) scale(1.05)}
+.sz{display:flex;gap:6px;flex-wrap:wrap}
+.sz button{min-height:40px;padding:0 14px;border:1.5px solid var(--line);border-radius:999px;background:transparent;color:var(--head);font:13px var(--body);cursor:pointer;transition:background .3s,color .3s,border-color .3s,transform .3s var(--ease)}
+.sz button:hover{border-color:var(--head)}
+.sz button[aria-pressed="true"]{background:var(--head);color:var(--bg);border-color:var(--head)}
+.sz button:active{transform:scale(.95)}
+.price.bump{animation:bump .4s var(--ease)}
+@keyframes bump{40%{transform:scale(1.12)}}
+.fly{position:fixed;z-index:50;width:16px;height:16px;border-radius:50%;background:var(--yellow);border:2px solid var(--head);pointer-events:none}
+.mapbox{margin-top:20px;border:1px solid var(--line);background:var(--surface);overflow:hidden;border-radius:6px}
+.mapbox iframe{display:block;width:100%;height:420px;border:0}
+.mapacts{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+@media (max-width:620px){.mapbox iframe{height:340px}}
+@media (prefers-reduced-motion:reduce){.card{animation:none}.fly{display:none}}
+
 </style></head><body>
 
 <div class="wrap">
@@ -240,7 +268,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
     </div>
     <p class="more">Ещё в каталоге: травы, пыльца, перга, прополис, подмор, соты.</p>
     <div class="grid" id="grid"></div>
-    <p class="note">Макет оформления. Корзина показывает, как это будет работать, оплата не подключена.</p>
+    <p class="note">Макет оформления. Цены и фасовки примерные, ориентир по сайту medom-v-uho.ru (там указаны диапазоны цен). Корзина показывает, как это будет работать, оплата не подключена.</p>
   </section>
 
   <section id="reviews" style="padding-bottom:70px">
@@ -270,6 +298,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
       <div class="contact"><small>Адрес</small><b>Республика Алтай, с. Усть-Кокса, ул. Мичурина, 1-В</b></div>
       <div class="contact"><small>Телефон</small><b>+7-913-698-0963</b></div>
     </div>
+    <div class="mapbox"><iframe title="Дом мёда на Яндекс Картах" loading="lazy" src="https://yandex.ru/map-widget/v1/?ll=85.6167%2C50.2667&z=15&pt=85.6167%2C50.2667%2Cpm2rdm"></iframe></div>
+    <div class="mapacts"><a class="btn g" href="https://yandex.ru/maps/?rtext=~50.2667%2C85.6167" target="_blank" rel="noopener">Построить маршрут</a><a class="btn o" href="https://yandex.ru/maps/?text=%D0%A3%D1%81%D1%82%D1%8C-%D0%9A%D0%BE%D0%BA%D1%81%D0%B0%2C%20%D1%83%D0%BB.%20%D0%9C%D0%B8%D1%87%D1%83%D1%80%D0%B8%D0%BD%D0%B0%2C%201%D0%92" target="_blank" rel="noopener">Открыть на Яндекс Картах</a></div>
   </section>
 </div>
 
@@ -282,25 +312,42 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 </div></footer>
 
 <script>
+var SZ=['0,25 л','0,5 л','1 л'];
 var items=[
- {n:'Медовая композиция с кедровой живицей',p:800,k:'jar',c:'honey'},
- {n:'Травяной чай «Пороги Катуни»',p:280,k:'pack',c:'tea'},
- {n:'Травяной чай «Дар Беловодья»',p:280,k:'pack2',c:'tea'}
+ {n:'Мёд Высокогорный',p:[580,950,1400],k:'jar',c:'honey'},
+ {n:'Мёд Дягиль',p:[600,980,1500],k:'jar2',c:'honey'},
+ {n:'Мёд Васильковый',p:[360,600,950],k:'jar3',c:'honey'},
+ {n:'Мёд Цветочный',p:[350,580,850],k:'jar4',c:'honey'},
+ {n:'Медовая композиция с кедровой живицей',p:[800],k:'jar',c:'honey'},
+ {n:'Травяной чай «Пороги Катуни»',p:[280],k:'pack',c:'tea'},
+ {n:'Травяной чай «Дар Беловодья»',p:[280],k:'pack2',c:'tea'}
 ];
 var art={
  jar:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="#FFCD2A" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#E6A817" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/><path d="M50 66l8 14H42z" fill="#5B7F3A"/></svg>',
+ jar2:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="#FFCD2A" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#B9690F" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/><path d="M50 66l8 14H42z" fill="#5B7F3A"/></svg>',
+ jar3:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="#FFCD2A" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#C9A227" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/><path d="M50 66l8 14H42z" fill="#5B7F3A"/></svg>',
+ jar4:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="#FFCD2A" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#F2C94C" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/><path d="M50 66l8 14H42z" fill="#5B7F3A"/></svg>',
  pack:'<svg viewBox="0 0 100 130"><rect x="18" y="12" width="64" height="106" rx="5" fill="#8A5230" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="26" width="48" height="34" fill="#FFF7DF"/><path d="M26 56l14-14 10 10 10-16 14 20z" fill="#5B7F3A"/><rect x="28" y="72" width="44" height="3" fill="#FFF7DF" opacity=".8"/><rect x="28" y="82" width="34" height="3" fill="#FFF7DF" opacity=".8"/></svg>',
  pack2:'<svg viewBox="0 0 100 130"><rect x="18" y="12" width="64" height="106" rx="5" fill="#6E8A4F" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="26" width="48" height="34" fill="#FFF7DF"/><circle cx="62" cy="38" r="6" fill="#FFCD2A"/><path d="M26 56l16-12 12 8 12-10 8 14z" fill="#8A5230" fill-opacity=".85"/><rect x="28" y="72" width="44" height="3" fill="#FFF7DF" opacity=".8"/><rect x="28" y="82" width="34" height="3" fill="#FFF7DF" opacity=".8"/></svg>'
 };
 var count=0,sum=0,cn=document.getElementById('cn'),cs=document.getElementById('cs');
 function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₽'}
 var grid=document.getElementById('grid');
+var calm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fly(btn){if(calm)return;var r=btn.getBoundingClientRect(),c=cn.getBoundingClientRect(),d=document.createElement('i');d.className='fly';
+ d.style.left=(r.left+r.width/2-8)+'px';d.style.top=(r.top+r.height/2-8)+'px';document.body.appendChild(d);
+ var a=d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+(c.left-r.left-r.width/2+8)+'px,'+(c.top-r.top-r.height/2+8)+'px) scale(.35)',opacity:.9}],{duration:700,easing:'cubic-bezier(.5,0,.8,.45)'});
+ a.onfinish=function(){d.remove()}}
 items.forEach(function(it){
-  var el=document.createElement('article');el.className='card';el.dataset.c=it.c;
-  el.innerHTML='<div class="art">'+art[it.k]+'</div><div class="in"><h3>'+it.n+'</h3><div class="price">'+fmt(it.p)+'</div><button type="button" class="add">Добавить в корзину</button></div>';
-  var b=el.querySelector('.add');
+  var el=document.createElement('article');el.className='card';el.dataset.c=it.c;var si=it.p.length>1?1:0;
+  var sizes=it.p.length>1?'<div class="sz" role="group" aria-label="Фасовка">'+it.p.map(function(_,i){return '<button type="button" aria-pressed="'+(i==si)+'" data-i="'+i+'">'+SZ[i]+'</button>'}).join('')+'</div>':'';
+  el.innerHTML='<div class="art">'+art[it.k]+'</div><div class="in"><h3>'+it.n+'</h3>'+sizes+'<div class="price">'+fmt(it.p[si])+'</div><button type="button" class="add">Добавить в корзину</button></div>';
+  var pr=el.querySelector('.price'),b=el.querySelector('.add');
+  el.querySelectorAll('.sz button').forEach(function(s){s.addEventListener('click',function(){
+    si=+s.dataset.i;el.querySelectorAll('.sz button').forEach(function(x){x.setAttribute('aria-pressed',x===s)});
+    pr.textContent=fmt(it.p[si]);pr.classList.remove('bump');void pr.offsetWidth;pr.classList.add('bump')})});
   b.addEventListener('click',function(){
-    count++;sum+=it.p;cn.textContent=count;cs.textContent=fmt(sum);
+    count++;sum+=it.p[si];cn.textContent=count;cs.textContent=fmt(sum);fly(b);
     cn.classList.add('pop');setTimeout(function(){cn.classList.remove('pop')},300);
     b.classList.add('done');b.textContent='Добавлено';
     setTimeout(function(){b.classList.remove('done');b.textContent='Добавить в корзину'},1500);
