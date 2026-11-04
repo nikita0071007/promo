@@ -71,13 +71,13 @@ section{padding-block:56px}
 .btn.g{background:var(--green);color:var(--on-green)}
 .btn.g:hover{filter:brightness(1.08)}
 .btn.o{border:1.5px solid var(--head);color:var(--head)}
-.hero-art{width:100%;max-width:420px;justify-self:center}
+.hero-art{width:100%;max-width:560px;justify-self:center}
 .hero-art svg{width:100%;height:auto;display:block;overflow:visible}
 .hero-art .disc{fill:var(--tint);stroke:var(--yellow);stroke-width:3}
 .hero-art .cells{fill:none;stroke:var(--yellow);stroke-width:2;opacity:.75}
 .hero-art .floater{animation:float 6s ease-in-out infinite;transform-origin:180px 200px}
 @keyframes float{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-12px) rotate(1.5deg)}}
-@media (max-width:760px){.hero{grid-template-columns:1fr;text-align:center}.hero p{margin-inline:auto}.btns{justify-content:center}.hero-art{order:-1;max-width:260px}}
+@media (max-width:760px){.hero{grid-template-columns:1fr;text-align:center}.hero p{margin-inline:auto}.btns{justify-content:center}.hero-art{order:-1;max-width:420px}}
 .bee{position:absolute;left:0;top:0;width:36px;height:30px;offset-path:path("M 10 150 C 180 20, 380 220, 600 90 S 900 10, 1080 140");offset-rotate:0deg;animation:fly 18s linear infinite;pointer-events:none}
 @keyframes fly{from{offset-distance:0%}to{offset-distance:100%}}
 .bee .w{transform-origin:18px 12px;animation:flap .18s ease-in-out infinite alternate}
@@ -173,7 +173,13 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 .mapbox iframe{display:block;width:100%;height:420px;border:0}
 .mapacts{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
 @media (max-width:620px){.mapbox iframe{height:340px}}
-@media (prefers-reduced-motion:reduce){.card{animation:none}.fly{display:none}}
+.hero-art .cloud{animation:drift 26s ease-in-out infinite alternate}.hero-art .c2{animation-duration:34s}@keyframes drift{to{transform:translateX(30px)}}.hero-art svg{border-radius:26px}
+.payrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:22px;color:var(--muted);font-size:14px}
+.pb{display:inline-flex;align-items:center;min-height:30px;padding:0 14px;border-radius:999px;border:1.5px solid var(--head);color:var(--head);font-weight:400;font-size:13px;letter-spacing:.06em;transition:transform .4s var(--ease),background .3s,color .3s}
+.pb.f{background:var(--yellow);border-color:var(--yellow);color:var(--on-yellow)}
+.pb:hover{transform:translateY(-2px)}
+@media (max-width:760px){.payrow{justify-content:center}}
+@media (prefers-reduced-motion:reduce){.hero-art .cloud{animation:none}.card{animation:none}.fly{display:none}}
 
 </style></head><body>
 
@@ -211,24 +217,45 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
       <h1 style="margin-top:12px">Натуральные продукты Горного Алтая</h1>
       <p>Высокогорный мёд, травы и чаи собственного производства. Без ГМО и искусственных добавок.</p>
       <div class="btns"><a class="btn g" href="#shop">В магазин →</a><a class="btn o" href="#delivery">Как получить заказ</a></div>
+      <div class="payrow"><span>Оплата:</span><b class="pb f">Карты МИР</b><b class="pb f">Сбербанк</b><b class="pb">СБП</b><b class="pb">при получении</b></div>
     </div>
-    <div class="hero-art" aria-hidden="true">
-      <svg viewBox="0 0 360 380">
+    <div class="hero-art">
+      <svg viewBox="0 0 520 420" role="img" aria-label="Дом мёда: домик у подножия гор, зелёная трава, маленькие ульи и синее небо">
         <defs>
-          <pattern id="hx2" width="44" height="50" patternUnits="userSpaceOnUse"><path class="cells" d="M22 0l22 12.5v25L22 50 0 37.5v-25z"/></pattern>
-          <clipPath id="disc"><circle cx="180" cy="190" r="168"/></clipPath>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E7FD8"/><stop offset="1" stop-color="#9ACDF3"/></linearGradient>
+          <clipPath id="scn"><rect width="520" height="420" rx="26"/></clipPath>
+          <pattern id="sid" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#ECEEF1"/><rect y="7" width="8" height="1.2" fill="#C9CED6"/></pattern>
+          <symbol id="hv" viewBox="0 0 30 30"><rect x="3" y="12" width="24" height="15" style="fill:var(--c)"/><rect x="3" y="19" width="24" height="2" fill="#000" opacity=".14"/><path d="M0 12L15 2l15 10z" fill="#8A5230"/><rect x="11" y="22" width="8" height="3" fill="#2A1A10"/><rect x="5" y="27" width="4" height="3" fill="#6B3F22"/><rect x="21" y="27" width="4" height="3" fill="#6B3F22"/></symbol>
         </defs>
-        <circle class="disc" cx="180" cy="190" r="168"/>
-        <rect x="0" y="0" width="360" height="380" fill="url(#hx2)" clip-path="url(#disc)"/>
-        <g class="floater">
-          <g transform="translate(96 62) scale(1.68)">
-            <rect x="22" y="6" width="56" height="18" rx="4" fill="#FFCD2A" stroke="#3A0010" stroke-opacity=".55" stroke-width="1.5"/>
-            <path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#E6A817" stroke="#3A0010" stroke-opacity=".55" stroke-width="1.5"/>
-            <rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/>
-            <path d="M50 66l8 14H42z" fill="#5B7F3A"/>
+        <g clip-path="url(#scn)">
+          <rect width="520" height="420" fill="url(#sky)"/>
+          <g class="cloud" fill="#fff"><ellipse cx="392" cy="70" rx="46" ry="15"/><ellipse cx="418" cy="58" rx="30" ry="16"/><ellipse cx="368" cy="62" rx="24" ry="12"/></g>
+          <g class="cloud c2" fill="#fff" opacity=".85"><ellipse cx="96" cy="110" rx="34" ry="10"/><ellipse cx="116" cy="102" rx="22" ry="11"/></g>
+          <path d="M0 250L70 175 120 200 190 150 262 235 262 300 0 300Z" fill="#8C7A58"/>
+          <path d="M0 262L60 214 130 246 200 196 280 262V310H0Z" fill="#6F8F52"/>
+          <path d="M520 244L470 196 410 226 350 190 300 250V310H520Z" fill="#6F8F52"/>
+          <path d="M520 262L476 232 430 256 380 236 340 270V310H520Z" fill="#5D8A45"/>
+          <rect y="296" width="520" height="130" fill="#5FA23A"/>
+          <path d="M0 296C60 286 110 304 180 296S300 286 360 296 470 304 520 292V310H0Z" fill="#7BBB4A"/>
+          <g>
+            <polygon points="116,212 225,92 334,212" fill="#EEF0F3" stroke="#8B1230" stroke-width="8" stroke-linejoin="round"/>
+            <rect x="126" y="206" width="262" height="104" fill="url(#sid)"/>
+            <polygon points="222,214 304,128 386,214" fill="#F6F7F9" stroke="#8B1230" stroke-width="8" stroke-linejoin="round"/>
+            <g transform="rotate(-5 308 170)"><text x="326" y="152" text-anchor="middle" font-family="Kurale,Georgia,serif" font-size="17" fill="#2A1A10" stroke="#fff" stroke-width="3" paint-order="stroke">Дом</text><text x="308" y="182" text-anchor="middle" font-family="Kurale,Georgia,serif" font-size="31" font-weight="700" fill="#FFCD2A" stroke="#7A0F28" stroke-width="6" paint-order="stroke" letter-spacing="1">МЁДА</text></g>
+            <rect x="232" y="206" width="156" height="12" fill="#8A2A22"/>
+            <rect x="238" y="216" width="10" height="94" fill="#7A241D"/><rect x="372" y="216" width="10" height="94" fill="#7A241D"/>
+            <rect x="262" y="240" width="32" height="70" fill="#2A2A2E"/><circle cx="288" cy="276" r="2" fill="#bbb"/>
+            <g><rect x="316" y="240" width="46" height="42" fill="#fff"/><rect x="320" y="244" width="38" height="34" fill="#3D5066"/><path d="M320 278l12-34h8l-12 34z" fill="#fff" opacity=".18"/><rect x="338" y="244" width="2" height="34" fill="#fff"/></g>
+            <g><rect x="148" y="238" width="58" height="46" fill="#fff"/><rect x="153" y="243" width="48" height="36" fill="#3D5066"/><path d="M153 279l14-36h9l-14 36z" fill="#fff" opacity=".18"/><rect x="176" y="243" width="2" height="36" fill="#fff"/></g>
+            <rect x="214" y="246" width="12" height="16" fill="#E6C86A"/>
+            <rect x="250" y="308" width="124" height="8" fill="#C0504D"/><rect x="244" y="316" width="136" height="8" fill="#A8403E"/>
           </g>
+          <g fill="#7B2E2A"><rect x="8" y="268" width="112" height="50"/><rect x="392" y="274" width="124" height="46"/></g>
+          <g stroke="#5A1F1C" stroke-width="2"><path d="M22 268v50M38 268v50M54 268v50M70 268v50M86 268v50M102 268v50M410 274v46M428 274v46M446 274v46M464 274v46M482 274v46M500 274v46"/></g>
+          <g><use href="#hv" x="22" y="332" width="44" height="44" style="--c:#FFCD2A"/><use href="#hv" x="78" y="346" width="40" height="40" style="--c:#FFFFFF"/><use href="#hv" x="410" y="338" width="44" height="44" style="--c:#7FB6EA"/><use href="#hv" x="466" y="350" width="38" height="38" style="--c:#FFCD2A"/><use href="#hv" x="176" y="352" width="34" height="34" style="--c:#C8E6A0"/></g>
+          <g fill="#4F8F2E"><path d="M140 350l4-14 4 14zM148 352l6-18 5 18zM300 356l4-14 4 14zM308 358l6-16 4 16zM360 350l4-12 4 12zM240 368l4-14 4 14z"/></g>
+          <g fill="#fff"><circle cx="222" cy="372" r="3"/><circle cx="330" cy="366" r="3"/><circle cx="130" cy="374" r="2.6"/></g><g fill="#FFCD2A"><circle cx="262" cy="380" r="3"/><circle cx="388" cy="376" r="3"/></g>
         </g>
-        <path d="M150 330c0 18 10 28 10 40M210 336c0 14 8 22 8 34" stroke="#FFCD2A" stroke-width="7" stroke-linecap="round" fill="none"/>
       </svg>
     </div>
   </section>
@@ -268,7 +295,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
     </div>
     <p class="more">Ещё в каталоге: травы, пыльца, перга, прополис, подмор, соты.</p>
     <div class="grid" id="grid"></div>
-    <p class="note">Макет оформления. Цены и фасовки примерные, ориентир по сайту medom-v-uho.ru (там указаны диапазоны цен). Корзина показывает, как это будет работать, оплата не подключена.</p>
+    <p class="note">Макет оформления. Фасовки одинаковые для всего мёда (250 г, 500 г, 1 кг), цены примерные, ориентир по сайту medom-v-uho.ru, где указаны диапазоны. Корзина показывает, как это будет работать, оплата не подключена.</p>
   </section>
 
   <section id="reviews" style="padding-bottom:70px">
@@ -286,7 +313,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
     <div class="contacts">
       <div class="contact"><small>Самовывоз</small><b>с. Усть-Кокса, ул. Мичурина, 1-В</b></div>
       <div class="contact"><small>Доставка</small><b>Почтой и транспортной компанией</b></div>
-      <div class="contact"><small>Оплата</small><b>По СБП или при получении</b></div>
+      <div class="contact"><small>Оплата</small><b>Картами МИР и Сбербанка, по СБП или при получении</b></div>
     </div>
     <p class="note" style="text-align:left">Условия доставки и оплаты здесь примерные, уточним у владельца.</p>
   </section>
@@ -312,7 +339,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 </div></footer>
 
 <script>
-var SZ=['0,25 л','0,5 л','1 л'];
+var SZ=['250 г','500 г','1 кг']; /* единые фасовки для всего мёда, меняются в одном месте */
 var items=[
  {n:'Мёд Высокогорный',p:[580,950,1400],k:'jar',c:'honey'},
  {n:'Мёд Дягиль',p:[600,980,1500],k:'jar2',c:'honey'},
