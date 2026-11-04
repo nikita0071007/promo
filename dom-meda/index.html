@@ -225,6 +225,12 @@ html.big{zoom:1.14}
  .callbar .btn{justify-content:center;min-height:48px;padding:0 10px}
  footer{padding-bottom:96px}
 }
+.sub{font-size:13px;color:var(--muted);line-height:1.4}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;list-style:none;margin:0;padding:0}
+.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:22px;display:grid;gap:6px}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--yellow);color:var(--on-yellow);font:400 18px var(--display)}
+.steps b{font:400 19px var(--display);color:var(--head)}
+.steps span{color:var(--muted);font-size:15px}
 @media (prefers-reduced-motion:reduce){.hero-art .cloud{animation:none}.card{animation:none}.fly{display:none}}
 
 </style></head><body>
@@ -250,7 +256,7 @@ html.big{zoom:1.14}
 <header class="menu">
   <div class="bar"><div class="wrap">
     <nav aria-label="Разделы"><a href="#top">Главная</a><a href="#shop">Магазин</a><a href="#delivery">Оплата и доставка</a><a href="#reviews">Отзывы</a><a href="#contacts">Контакты</a></nav>
-    <div class="cart" aria-live="polite">Корзина <b id="cn">0</b> <span id="cs">0 ₽</span></div>
+    <div class="cart" aria-live="polite">Корзина <b id="cn">0</b> <span id="cs">≈ 0 ₽</span></div>
   </div></div>
   <div class="drip" aria-hidden="true"></div>
 </header>
@@ -339,11 +345,22 @@ html.big{zoom:1.14}
       <button type="button" class="chip" data-f="honey">Мёд</button>
       <button type="button" class="chip" data-f="tea">Чаи</button>
       <button type="button" class="chip" data-f="gift">Наборы</button>
+      <button type="button" class="chip" data-f="exact">С точным весом</button>
     </div>
     <p class="more">Ещё в каталоге: травы, пыльца, перга, прополис, подмор, соты.</p>
     <div class="msgrow"><span>Проще написать? Закажите в мессенджере:</span><a class="btn g" href="https://t.me/" target="_blank" rel="noopener">Telegram</a><a class="btn o" href="https://max.ru/" target="_blank" rel="noopener">MAX</a><a class="btn o" href="https://vk.com/" target="_blank" rel="noopener">ВКонтакте</a></div>
     <div class="grid" id="grid"></div>
     <p class="note">Макет оформления. Фасовки одинаковые для всего мёда (250 г, 500 г, 1 кг), цены примерные, ориентир по сайту medom-v-uho.ru, где указаны диапазоны. Корзина показывает, как это будет работать, оплата не подключена.</p>
+  </section>
+
+  <section id="how" style="padding-top:8px">
+    <div class="sec-h"><div class="eyebrow">Оплата по весу</div><h2 style="margin-top:8px">Как мы считаем цену <span class="tag">пример схемы</span></h2></div>
+    <ol class="steps">
+      <li><b>Вы оформляете заказ</b><span>Видите ориентировочную сумму: цена за кг и примерный вес банки.</span></li>
+      <li><b>Мы взвешиваем банки</b><span>Считаем точную сумму по настоящему весу и пишем вам.</span></li>
+      <li><b>Присылаем ссылку на оплату</b><span>Платите картой МИР или Сбербанка именно на эту сумму. Чек придёт на почту или в телефон автоматически.</span></li>
+    </ol>
+    <p class="note">Если банок немного, можно выбрать мёд из вкладки «С точным весом»: вес уже известен, платите сразу.</p>
   </section>
 
   <section id="choose" style="padding-top:8px">
@@ -430,19 +447,21 @@ html.big{zoom:1.14}
 <div class="callbar"><a class="btn g" href="tel:+79136980963">Позвонить</a><a class="btn o" href="#contacts">Написать</a></div>
 
 <script>
-var SZ=['250 г','500 г','1 кг']; /* единые фасовки для всего мёда, меняются в одном месте */
+var JW=[0.35,0.7,1.4],JN=['малая ≈ 350 г','средняя ≈ 700 г','большая ≈ 1,4 кг']; /* примерный вес банки; цена за кг ниже */
 var DH='Состав: натуральный мёд, без добавок. Сбор: лето 2026. Срок годности: 24 месяца при хранении до +20 °C. (пример)';
 var DT='Состав: алтайские травы. Фасовка: 50 г. Срок годности: 18 месяцев. (пример)';
 var items=[
- {n:'Мёд Высокогорный',p:[580,950,1400],k:'jar',c:'honey',d:DH},
- {n:'Мёд Дягиль',p:[600,980,1500],k:'jar2',c:'honey',d:DH},
- {n:'Мёд Васильковый',p:[360,600,950],k:'jar3',c:'honey',d:DH},
- {n:'Мёд Цветочный',p:[350,580,850],k:'jar4',c:'honey',d:DH},
- {n:'Медовая композиция с кедровой живицей',p:[800],k:'jar',c:'honey',d:'Состав: мёд и кедровая живица. Срок годности: 12 месяцев. (пример)'},
- {n:'Травяной чай «Пороги Катуни»',p:[280],k:'pack',c:'tea',d:DT},
- {n:'Травяной чай «Дар Беловодья»',p:[280],k:'pack2',c:'tea',d:DT},
- {n:'Новогодний набор: мёд и чай',p:[1450],k:'box',c:'gift',d:'В наборе: мёд 250 г, травяной чай, подарочная упаковка. (пример)'},
- {n:'Набор для чая',p:[990],k:'box2',c:'gift',d:'В наборе: два травяных чая и мёд 250 г. (пример)'}
+ {n:'Мёд Высокогорный',kg:1000,k:'jar',c:'honey',d:DH},
+ {n:'Мёд Дягиль',kg:1070,k:'jar2',c:'honey',d:DH},
+ {n:'Мёд Васильковый',kg:680,k:'jar3',c:'honey',d:DH},
+ {n:'Мёд Цветочный',kg:610,k:'jar4',c:'honey',d:DH},
+ {n:'Медовая композиция с кедровой живицей',fix:800,k:'jar',c:'honey',d:'Состав: мёд и кедровая живица. Срок годности: 12 месяцев. (пример)'},
+ {n:'Травяной чай «Пороги Катуни»',fix:280,k:'pack',c:'tea',d:DT},
+ {n:'Травяной чай «Дар Беловодья»',fix:280,k:'pack2',c:'tea',d:DT},
+ {n:'Новогодний набор: мёд и чай',fix:1450,k:'box',c:'gift',d:'В наборе: мёд 250 г, травяной чай, подарочная упаковка. (пример)'},
+ {n:'Набор для чая',fix:990,k:'box2',c:'gift',d:'В наборе: два травяных чая и мёд 250 г. (пример)'},
+ {n:'Мёд Цветочный, банка 0,73 кг',w:0.73,kg:610,k:'jar4',c:'exact',d:'Банка уже взвешена: 0,73 кг. Цена точная. (пример)'},
+ {n:'Мёд Высокогорный, банка 1,38 кг',w:1.38,kg:1000,k:'jar',c:'exact',d:'Банка уже взвешена: 1,38 кг. Цена точная. (пример)'}
 ];
 var art={
  jar:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="#FFCD2A" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#E6A817" stroke="#3A0010" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/><path d="M50 66l8 14H42z" fill="#5B7F3A"/></svg>',
@@ -463,18 +482,20 @@ function fly(btn){if(calm)return;var r=btn.getBoundingClientRect(),c=cn.getBound
  var a=d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+(c.left-r.left-r.width/2+8)+'px,'+(c.top-r.top-r.height/2+8)+'px) scale(.35)',opacity:.9}],{duration:700,easing:'cubic-bezier(.5,0,.8,.45)'});
  a.onfinish=function(){d.remove()}}
 items.forEach(function(it){
-  var el=document.createElement('article');el.className='card';el.dataset.c=it.c;var si=it.p.length>1?1:0;
-  var sizes=it.p.length>1?'<div class="sz" role="group" aria-label="Фасовка">'+it.p.map(function(_,i){return '<button type="button" aria-pressed="'+(i==si)+'" data-i="'+i+'">'+SZ[i]+'</button>'}).join('')+'</div>':'';
-  el.innerHTML='<div class="art">'+art[it.k]+'</div><div class="in"><h3>'+it.n+'</h3>'+sizes+'<div class="price">'+fmt(it.p[si])+'</div><details class="dt2"><summary>Состав и срок годности</summary><p>'+it.d+'</p></details><button type="button" class="add">Добавить в корзину</button></div>';
-  var pr=el.querySelector('.price'),b=el.querySelector('.add');
+  var el=document.createElement('article');el.className='card';el.dataset.c=it.c;var si=1,est=!!it.kg&&!it.w;
+  function price(){return it.fix||(it.w?Math.round(it.w*it.kg):Math.round(it.kg*JW[si]/10)*10)}
+  var sizes=est?'<div class="sz" role="group" aria-label="Размер банки">'+JN.map(function(n,i){return '<button type="button" aria-pressed="'+(i==si)+'" data-i="'+i+'">'+n+'</button>'}).join('')+'</div>':'';
+  var sub=est?'<div class="sub">'+fmt(it.kg)+' за кг. Вес банки примерный, точную цену посчитаем после взвешивания.</div>':(it.w?'<div class="sub">Вес '+String(it.w).replace('.',',')+' кг, '+fmt(it.kg)+' за кг. Цена точная, оплата сразу.</div>':'');
+  el.innerHTML='<div class="art">'+art[it.k]+'</div><div class="in"><h3>'+it.n+'</h3>'+sizes+'<div class="price">'+(est?'≈ ':'')+fmt(price())+'</div>'+sub+'<details class="dt2"><summary>Состав и срок годности</summary><p>'+it.d+'</p></details><button type="button" class="add">'+(it.w?'Купить сразу':'Добавить в корзину')+'</button></div>';
+  var pr=el.querySelector('.price'),b=el.querySelector('.add'),lab=b.textContent;
   el.querySelectorAll('.sz button').forEach(function(s){s.addEventListener('click',function(){
     si=+s.dataset.i;el.querySelectorAll('.sz button').forEach(function(x){x.setAttribute('aria-pressed',x===s)});
-    pr.textContent=fmt(it.p[si]);pr.classList.remove('bump');void pr.offsetWidth;pr.classList.add('bump')})});
+    pr.textContent='≈ '+fmt(price());pr.classList.remove('bump');void pr.offsetWidth;pr.classList.add('bump')})});
   b.addEventListener('click',function(){
-    count++;sum+=it.p[si];cn.textContent=count;cs.textContent=fmt(sum);fly(b);
+    count++;sum+=price();cn.textContent=count;cs.textContent='≈ '+fmt(sum);fly(b);
     cn.classList.add('pop');setTimeout(function(){cn.classList.remove('pop')},300);
     b.classList.add('done');b.textContent='Добавлено';
-    setTimeout(function(){b.classList.remove('done');b.textContent='Добавить в корзину'},1500);
+    setTimeout(function(){b.classList.remove('done');b.textContent=lab},1500);
   });
   grid.appendChild(el);
 });
