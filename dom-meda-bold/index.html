@@ -1,0 +1,317 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><style>[hidden]{display:none!important}img{max-width:100%}</style><title>Дом мёда, с анимацией</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&display=swap">
+<style>
+/* Layout: тёмная вертикальная витрина. Частицы собирают название, кольцо света, три панели «мёд / травы / чай», банка наполняется при прокрутке, подпись-монета GusevMade */
+:root{
+  --bg:#FBF5E8; --surface:#FFFFFF; --ink:#2A1D0E; --muted:#7A6748; --line:#E6D9BD;
+  --honey:#C98A0B; --honey-2:#F2B33D; --herb:#5E7F47; --ink-on-honey:#2A1D0E;
+  --font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#130E08; --surface:#1D150C; --ink:#F7EEDC; --muted:#B8A78A; --line:#33271A;
+  --honey:#F2B33D; --honey-2:#FFD36B; --herb:#9DBB84; --ink-on-honey:#2A1D0E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#130E08; --surface:#1D150C; --ink:#F7EEDC; --muted:#B8A78A; --line:#33271A;
+  --honey:#F2B33D; --honey-2:#FFD36B; --herb:#9DBB84; --ink-on-honey:#2A1D0E; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3{font-weight:300;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(30px,4vw,46px);line-height:1.1}
+p{text-wrap:pretty;margin:0}
+a{color:var(--honey)}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+section{padding-block:72px}
+.muted{color:var(--muted)}
+
+/* scroll progress: капля мёда стекает вдоль левого края */
+.flow{position:fixed;left:max(4px,env(safe-area-inset-left,0px));top:0;bottom:0;width:6px;z-index:5;pointer-events:none}
+.flow i{position:absolute;left:1px;top:0;width:3px;height:var(--p,0%);background:linear-gradient(var(--honey-2),var(--honey));border-radius:0 0 3px 3px}
+.flow b{position:absolute;left:-1px;top:var(--p,0%);width:9px;height:12px;background:var(--honey);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;transform:translateY(-2px)}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;display:flex;justify-content:space-between;align-items:center;gap:16px;padding-block:14px;
+  background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.nav b{font-weight:800;letter-spacing:-.01em}
+.nav nav{display:flex;gap:20px;flex-wrap:wrap;font-size:14px}
+.nav nav a{color:var(--muted);text-decoration:none;transition:color .3s var(--ease)}
+.nav nav a:hover{color:var(--honey)}
+
+/* hero */
+.hero{position:relative;text-align:center;padding-block:40px 56px}
+.ring{position:absolute;left:50%;top:210px;width:min(520px,92vw);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:conic-gradient(from 0deg,transparent,var(--honey-2),transparent 40%,var(--honey),transparent 80%);
+  filter:blur(26px);opacity:.38;animation:spin 14s linear infinite;pointer-events:none;
+  -webkit-mask:radial-gradient(circle,transparent 52%,#000 54%,#000 66%,transparent 68%);mask:radial-gradient(circle,transparent 52%,#000 54%,#000 66%,transparent 68%)}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+#stage{display:block;width:100%;height:260px;position:relative}
+.sr{position:absolute;left:-9999px}
+.hero .eyebrow{margin-top:8px}
+.hero h2{margin-top:12px}
+.hero p{max-width:52ch;margin:16px auto 0;color:var(--muted)}
+.cta{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 28px;margin-top:28px;border-radius:999px;background:var(--honey);color:var(--ink-on-honey);font-weight:600;text-decoration:none;position:relative;overflow:hidden;transition:transform .5s var(--ease)}
+.cta:hover{transform:translateY(-2px)}
+.cta::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);transition:left .8s var(--ease)}
+.cta:hover::after{left:130%}
+a:focus-visible,button:focus-visible{outline:2px solid var(--honey);outline-offset:3px}
+
+/* panels */
+.panels{display:flex;gap:12px;height:430px}
+.panel{flex:1;position:relative;overflow:hidden;border-radius:16px;border:1px solid var(--line);background:var(--surface);cursor:pointer;
+  transition:flex .8s var(--ease);padding:28px;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}
+.panel:hover,.panel:focus-within,.panel.on{flex:2.4}
+.panel svg.bg{position:absolute;inset:0;width:100%;height:100%;opacity:.55;transition:opacity .6s,transform 1.2s var(--ease)}
+.panel:hover svg.bg,.panel.on svg.bg{opacity:.95;transform:scale(1.06)}
+.panel h3{position:relative;font-size:26px;font-weight:600}
+.panel p{position:relative;color:var(--muted);font-size:14px;max-height:0;opacity:0;transition:max-height .8s var(--ease),opacity .6s .1s;margin-top:0}
+.panel:hover p,.panel.on p{max-height:220px;opacity:1;margin-top:10px}
+.panel .tag{position:relative;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--honey);font-weight:600;margin-bottom:6px}
+@media (max-width:640px){.panels{flex-direction:column;height:auto}.panel{min-height:150px}.panel p{max-height:220px;opacity:1;margin-top:10px}}
+
+/* products */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:32px}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:14px;transform-style:preserve-3d;transition:transform .5s var(--ease),border-color .3s}
+.card:hover{border-color:var(--honey)}
+.card .art{height:170px;display:grid;place-items:center;border-radius:12px;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--honey) 22%,transparent),transparent 70%)}
+.card .art svg{height:140px;overflow:visible}
+.card h3{font-size:18px;font-weight:600}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.price{font-size:22px;font-weight:300;font-variant-numeric:tabular-nums}
+.add{position:relative;overflow:hidden;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--honey);background:transparent;color:var(--ink);font:600 14px var(--font);cursor:pointer;isolation:isolate}
+.add::before{content:"";position:absolute;inset:0;background:var(--honey);transform:translateY(101%);transition:transform .7s var(--ease);z-index:-1;border-radius:inherit}
+.add.done::before,.add:hover::before{transform:translateY(0)}
+.add:hover,.add.done{color:var(--ink-on-honey)}
+
+/* guarantee + jar */
+.guar{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:40px;align-items:center}
+.jar{width:100%;max-width:240px;margin:0 auto;display:block}
+.facts{display:grid;gap:22px}
+.fact{border-top:1px solid var(--line);padding-top:16px}
+.fact h3{font-size:19px;font-weight:600}
+.fact p{color:var(--muted);margin-top:6px}
+@media (max-width:760px){.guar{grid-template-columns:1fr}}
+
+/* reviews */
+.rev{position:relative;background:var(--honey);color:var(--ink-on-honey);border-radius:16px;padding:44px 28px 36px;text-align:center;overflow:hidden}
+.rev q{display:block;font-size:clamp(22px,3vw,32px);font-weight:300;quotes:none;min-height:2.4em;transition:opacity .4s}
+.rev cite{display:block;margin-top:12px;font-style:normal;font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+.rev .nb{display:flex;justify-content:center;gap:10px;margin-top:20px}
+.rev button{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink-on-honey);background:transparent;color:var(--ink-on-honey);font-size:18px;cursor:pointer;transition:transform .4s var(--ease)}
+.rev button:hover{transform:scale(1.1)}
+.rev .hex{position:absolute;inset:0;opacity:.14;pointer-events:none}
+
+/* contacts + footer */
+.contacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.contact{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.contact small{display:block;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.contact b{font-weight:600}
+footer{border-top:1px solid var(--line);padding-block:32px 48px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:14px}
+.gm{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+.coin{width:40px;height:40px;perspective:200px;display:block}
+.coin svg{width:40px;height:40px;transition:transform 1s var(--ease)}
+.gm:hover .coin svg{transform:rotateY(360deg)}
+.gm small{display:block;color:var(--muted);font-size:11px}
+.gm b{font-weight:800}
+
+.reveal{opacity:1;transform:none}
+.js .reveal.pre{opacity:0;transform:translateY(24px)}
+.reveal{transition:opacity .9s var(--ease),transform .9s var(--ease)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+
+<div class="flow" aria-hidden="true"><i></i><b></b></div>
+
+<div class="wrap">
+  <header class="nav">
+    <b>Дом мёда</b>
+    <nav aria-label="Разделы"><a href="#kinds">Продукты</a><a href="#shop">Магазин</a><a href="#quality">Гарантия</a><a href="#reviews">Отзывы</a><a href="#contacts">Контакты</a></nav>
+  </header>
+
+  <section class="hero">
+    <div class="ring" aria-hidden="true"></div>
+    <canvas id="stage" aria-hidden="true"></canvas>
+    <h1 class="sr">Дом мёда</h1>
+    <div class="eyebrow">Усть-Кокса · Республика Алтай</div>
+    <h2>Натуральные продукты Горного Алтая</h2>
+    <p>Высокогорный мёд, травяные сборы и чаи с собственного производства. Без ГМО и искусственных добавок.</p>
+    <a class="cta" href="#shop">Выбрать продукты →</a>
+  </section>
+
+  <section id="kinds">
+    <div class="eyebrow">Три направления</div>
+    <h2 style="margin:12px 0 28px">Наведите, чтобы раскрыть</h2>
+    <div class="panels">
+      <div class="panel" tabindex="0">
+        <svg class="bg" viewBox="0 0 200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><pattern id="hx" width="34.6" height="40" patternUnits="userSpaceOnUse" patternTransform="scale(1.2)"><path d="M17.3 0l17.3 10v20L17.3 40 0 30V10z" fill="none" stroke="var(--honey)" stroke-width="1.4"/></pattern><radialGradient id="hg" cx=".5" cy=".9" r=".9"><stop offset="0" stop-color="var(--honey)" stop-opacity=".55"/><stop offset="1" stop-color="var(--honey)" stop-opacity="0"/></radialGradient></defs><rect width="200" height="300" fill="url(#hg)"/><rect width="200" height="300" fill="url(#hx)"/></svg>
+        <div class="tag">Мёд</div><h3>Алтайский мёд</h3>
+        <p>Собирается с высокогорных медоносов в чистых уголках. В составе более 40 трав, каждая со своими свойствами. Укрепляет иммунитет.</p>
+      </div>
+      <div class="panel" tabindex="0">
+        <svg class="bg" viewBox="0 0 200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="none" stroke="var(--herb)" stroke-width="1.6" stroke-linecap="round"><path d="M100 300C100 220 96 140 104 40"/><path d="M100 250C70 240 52 220 46 190C76 196 94 216 100 250"/><path d="M102 200C132 192 150 172 156 142C126 148 108 166 102 200"/><path d="M100 150C72 140 58 120 54 96C80 102 96 120 100 150"/><path d="M104 110C130 104 144 86 148 62C124 68 108 84 104 110"/><path d="M30 300C32 250 30 200 36 160"/><path d="M170 300C168 240 172 190 164 150"/></g></svg>
+        <div class="tag">Травы</div><h3>Алтайские травы</h3>
+        <p>В Усть-Коксинском районе больше сотни видов редких лекарственных растений. Из-за особого геологического строения они обладают повышенной биологической активностью.</p>
+      </div>
+      <div class="panel" tabindex="0">
+        <svg class="bg" viewBox="0 0 200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="none" stroke="var(--honey)" stroke-width="1.6" stroke-linecap="round"><path d="M70 150c-20-24 20-40 0-64s20-40 0-60"/><path d="M100 150c-20-24 20-40 0-64s20-40 0-60"/><path d="M130 150c-20-24 20-40 0-64s20-40 0-60"/></g><path d="M50 170h100c0 40-20 66-50 66s-50-26-50-66z" fill="none" stroke="var(--herb)" stroke-width="1.8"/></svg>
+        <div class="tag">Чай</div><h3>Чаи из высокогорных трав</h3>
+        <p>Сборы «Пороги Катуни» и «Дар Беловодья». Покупаете ингредиенты, а не «продукты»: меньше добавок, больше пользы.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="shop">
+    <div class="eyebrow">Специальные предложения</div>
+    <h2 style="margin-top:12px">Выбор недели</h2>
+    <div class="grid" id="grid"></div>
+    <p class="muted" style="margin-top:16px;font-size:13px">Тестовая версия: корзина и оплата не подключены.</p>
+  </section>
+
+  <section id="quality">
+    <div class="guar">
+      <svg class="jar" viewBox="0 0 160 220" aria-hidden="true">
+        <defs><clipPath id="jc"><path d="M30 50h100v20c10 6 14 16 14 30v90c0 14-10 24-24 24H40c-14 0-24-10-24-24v-90c0-14 4-24 14-30z"/></clipPath>
+          <linearGradient id="jg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--honey-2)"/><stop offset="1" stop-color="var(--honey)"/></linearGradient></defs>
+        <rect x="26" y="20" width="108" height="30" rx="6" fill="var(--honey)"/>
+        <g clip-path="url(#jc)"><rect id="fill" x="0" y="220" width="160" height="200" fill="url(#jg)"/>
+          <ellipse cx="80" cy="0" rx="70" ry="5" id="surf" fill="var(--honey-2)" opacity=".8"/></g>
+        <path d="M30 50h100v20c10 6 14 16 14 30v90c0 14-10 24-24 24H40c-14 0-24-10-24-24v-90c0-14 4-24 14-30z" fill="none" stroke="var(--ink)" stroke-opacity=".6" stroke-width="2"/>
+      </svg>
+      <div>
+        <div class="eyebrow">Гарантия качества</div>
+        <h2 style="margin:12px 0 24px">Банка наполняется, пока вы читаете</h2>
+        <div class="facts">
+          <div class="fact"><h3>Собственное производство</h3><p>Только натуральные ингредиенты, без ГМО и иных искусственных добавок.</p></div>
+          <div class="fact"><h3>Уникальная природа</h3><p>Усть-Коксинский район один из самых богатых по биоразнообразию.</p></div>
+          <div class="fact"><h3>Традиционные рецепты</h3><p>Придуманы много веков назад и не потеряли актуальность.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="reviews">
+    <div class="rev">
+      <svg class="hex" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="400" height="200" fill="url(#hx)"/></svg>
+      <q id="rq">Невероятно вкусный мёд!!!</q>
+      <cite id="rc">Татьяна</cite>
+      <div class="nb"><button type="button" id="prev" aria-label="Предыдущий отзыв">←</button><button type="button" id="next" aria-label="Следующий отзыв">→</button></div>
+    </div>
+  </section>
+
+  <section id="contacts">
+    <div class="eyebrow">Контакты</div>
+    <h2 style="margin:12px 0 24px">Приезжайте или звоните</h2>
+    <div class="contacts">
+      <div class="contact"><small>Адрес</small><b>Республика Алтай, с. Усть-Кокса, ул. Мичурина, 1-В</b></div>
+      <div class="contact"><small>Телефон</small><b>+7-913-698-0963</b></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Дом мёда · тестовый макет, не официальный сайт</span>
+    <a class="gm" href="https://gusevmade.ru" target="_blank" rel="noopener" aria-label="Дизайн и разработка: GusevMade">
+      <span class="coin" aria-hidden="true"><svg viewBox="0 0 40 40"><defs><linearGradient id="gmG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6D98A"/><stop offset=".55" stop-color="#D9A441"/><stop offset="1" stop-color="#A8741F"/></linearGradient></defs><circle cx="20" cy="20" r="19" fill="url(#gmG)"/><circle cx="20" cy="20" r="15.5" fill="none" stroke="#FBE7B0" stroke-opacity=".7"/><text x="20" y="26.6" text-anchor="middle" font-family="Georgia,serif" font-size="19" font-weight="700" fill="#6B4410">G</text></svg></span>
+      <span><small>Дизайн и разработка</small><b>GusevMade</b></span>
+    </a>
+  </footer>
+</div>
+
+<script>
+document.documentElement.classList.add('js');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* продукты */
+const items = [
+  {n:'Медовая композиция с кедровой живицей', p:800, k:'jar'},
+  {n:'Травяной чай «Пороги Катуни»', p:280, k:'pack'},
+  {n:'Травяной чай «Дар Беловодья»', p:280, k:'pack2'}
+];
+const art = {
+  jar:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="var(--honey-2)"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="var(--honey)" fill-opacity=".85" stroke="var(--ink)" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="4" fill="var(--surface)" fill-opacity=".85"/><path d="M50 66l8 14H42z" fill="var(--herb)"/></svg>',
+  pack:'<svg viewBox="0 0 100 130"><rect x="18" y="12" width="64" height="106" rx="6" fill="var(--herb)" fill-opacity=".85" stroke="var(--ink)" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="26" width="48" height="34" rx="3" fill="var(--surface)" fill-opacity=".8"/><path d="M26 56l14-14 10 10 10-16 14 20z" fill="var(--honey)"/><rect x="28" y="72" width="44" height="3" fill="var(--surface)" opacity=".7"/><rect x="28" y="82" width="34" height="3" fill="var(--surface)" opacity=".7"/></svg>',
+  pack2:'<svg viewBox="0 0 100 130"><rect x="18" y="12" width="64" height="106" rx="6" fill="var(--honey)" fill-opacity=".8" stroke="var(--ink)" stroke-opacity=".5" stroke-width="1.5"/><rect x="26" y="26" width="48" height="34" rx="3" fill="var(--surface)" fill-opacity=".8"/><circle cx="62" cy="38" r="6" fill="var(--herb)"/><path d="M26 56l16-12 12 8 12-10 8 14z" fill="var(--herb)" fill-opacity=".8"/><rect x="28" y="72" width="44" height="3" fill="var(--ink)" opacity=".4"/><rect x="28" y="82" width="34" height="3" fill="var(--ink)" opacity=".4"/></svg>'
+};
+const grid = document.getElementById('grid');
+items.forEach((it,i)=>{
+  const el = document.createElement('article');
+  el.className = 'card reveal pre';
+  el.style.transitionDelay = (i*120)+'ms';
+  el.innerHTML = '<div class="art">'+art[it.k]+'</div><h3>'+it.n+'</h3><div class="row"><span class="price">'+it.p+' ₽</span><button type="button" class="add">В корзину</button></div>';
+  const b = el.querySelector('.add');
+  b.addEventListener('click',()=>{ b.classList.add('done'); b.textContent='✓ Добавлено'; setTimeout(()=>{b.classList.remove('done');b.textContent='В корзину'},1800); });
+  if(!reduce){
+    el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;el.style.transform='perspective(700px) rotateY('+(x*8)+'deg) rotateX('+(-y*8)+'deg)'});
+    el.addEventListener('pointerleave',()=>{el.style.transform=''});
+  }
+  grid.appendChild(el);
+});
+
+/* отзывы */
+const revs=[['Невероятно вкусный мёд!!!','Татьяна'],['Отлично!','Иван']];let ri=0;
+const rq=document.getElementById('rq'),rc=document.getElementById('rc');
+function showRev(d){ri=(ri+d+revs.length)%revs.length;rq.style.opacity=0;setTimeout(()=>{rq.textContent=revs[ri][0];rc.textContent='— '+revs[ri][1];rq.style.opacity=1},300)}
+document.getElementById('prev').onclick=()=>showRev(-1);
+document.getElementById('next').onclick=()=>showRev(1);
+rc.textContent='— '+revs[0][1];
+
+/* панели: на касаниях переключаются по тапу */
+document.querySelectorAll('.panel').forEach(p=>p.addEventListener('click',()=>{document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));p.classList.add('on')}));
+
+/* прокрутка: капля, банка, появление */
+const flow=document.querySelector('.flow'), fill=document.getElementById('fill'), surf=document.getElementById('surf'), jar=document.querySelector('.jar');
+function onScroll(){
+  const h=document.documentElement.scrollHeight-innerHeight;
+  flow.style.setProperty('--p',(h>0?scrollY/h*100:0)+'%');
+  const r=jar.getBoundingClientRect();
+  const t=Math.min(1,Math.max(0,(innerHeight-r.top)/(innerHeight*0.9)));
+  const y=220-t*170; fill.setAttribute('y',y); surf.setAttribute('cy',y);
+}
+addEventListener('scroll',onScroll,{passive:true}); onScroll();
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove('pre');io.unobserve(e.target)}}),{threshold:.15});
+document.querySelectorAll('.reveal.pre').forEach(el=>io.observe(el));
+setTimeout(()=>document.querySelectorAll('.reveal.pre').forEach(el=>{const r=el.getBoundingClientRect();if(r.top<innerHeight)el.classList.remove('pre')}),50);
+
+/* частицы: название из пыльцы */
+(function(){
+  const cv=document.getElementById('stage'),ctx=cv.getContext('2d');
+  let W,H,P=[],mx=-999,my=-999,dpr=1;
+  function build(){
+    dpr=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+    const off=document.createElement('canvas');off.width=W;off.height=H;const o=off.getContext('2d');
+    const fs=Math.min(H*0.62,W/4.4);o.font='800 '+fs+'px Manrope,system-ui,sans-serif';o.textAlign='center';o.textBaseline='middle';o.fillStyle='#000';
+    o.fillText('Дом мёда',W/2,H/2);
+    const d=o.getImageData(0,0,W,H).data;const step=W<500?3:4;const old=P;P=[];
+    for(let y=0;y<H;y+=step)for(let x=0;x<W;x+=step){if(d[(y*W+x)*4+3]>128){
+      const i=P.length;P.push({tx:x,ty:y,x:reduce?x:Math.random()*W,y:reduce?y:Math.random()*H,vx:0,vy:0,s:Math.random()*1.1+1.1,c:Math.random()})}}
+  }
+  function frame(t){
+    ctx.clearRect(0,0,W,H);
+    const a=css('--honey-2')||'#FFD36B',b=css('--honey')||'#F2B33D';
+    for(const p of P){
+      const dx=p.tx-p.x,dy=p.ty-p.y;
+      p.vx+=dx*.035;p.vy+=dy*.035;
+      const mdx=p.x-mx,mdy=p.y-my,md=mdx*mdx+mdy*mdy;
+      if(md<5000){const f=(1-md/5000)*3;const m=Math.sqrt(md)||1;p.vx+=mdx/m*f;p.vy+=mdy/m*f}
+      p.vx*=.82;p.vy*=.82;p.x+=p.vx;p.y+=p.vy;
+      ctx.globalAlpha=.75+.25*Math.sin(t/500+p.c*6);
+      ctx.fillStyle=p.c>.5?a:b;
+      ctx.fillRect(p.x,p.y,p.s,p.s);
+    }
+    if(!reduce) requestAnimationFrame(frame);
+  }
+  function start(){build();frame(0)}
+  (document.fonts&&document.fonts.load?document.fonts.load('800 60px Manrope','Дом мёда').catch(()=>{}):Promise.resolve()).then(start);
+  cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top});
+  cv.addEventListener('pointerleave',()=>{mx=my=-999});
+  addEventListener('resize',()=>{build()});
+  if(reduce) setTimeout(()=>frame(0),200);
+})();
+</script>
+</body></html>

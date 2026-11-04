@@ -1,0 +1,301 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><style>[hidden]{display:none!important}img{max-width:100%}</style><title>Дом мёда, крафт</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:wght@400;500;700&family=Marck+Script&display=swap">
+<style>
+/* Layout: «лавка». Страница как крафтовый прилавок: вывеска-доска, ярлыки вместо меню, этикетки-карточки, штамп-кольцо, записки с кнопками-булавками. Цвета бумаги, дерева и сургуча */
+:root{
+  --bg:#E8D9B9; --paper:#F7EFDC; --ink:#3B2A18; --muted:#7A6548; --line:#B99B6A;
+  --wood:#6A4426; --wood-2:#7D5430; --on-wood:#F7E8C8; --stamp:#8C2F1B; --on-stamp:#FBF1DC;
+  --green:#4F6B3A; --honey:#D9961C; --shadow:rgba(59,42,24,.22);
+  --display:"Alegreya",Georgia,"Times New Roman",serif;
+  --body:"Alegreya Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --hand:"Marck Script","Segoe Script",cursive;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#21180F; --paper:#2F2217; --ink:#F2E4C6; --muted:#BFA77D; --line:#6B5435;
+  --wood:#4A2F1A; --wood-2:#5A3A20; --on-wood:#F2E4C6; --stamp:#E58A6F; --on-stamp:#2A130B;
+  --green:#9DBB7C; --honey:#F0B648; --shadow:rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#21180F; --paper:#2F2217; --ink:#F2E4C6; --muted:#BFA77D; --line:#6B5435;
+  --wood:#4A2F1A; --wood-2:#5A3A20; --on-wood:#F2E4C6; --stamp:#E58A6F; --on-stamp:#2A130B;
+  --green:#9DBB7C; --honey:#F0B648; --shadow:rgba(0,0,0,.5); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55;overflow-x:hidden;
+  background-color:var(--bg);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .2 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance}
+h1{font-weight:700;font-size:clamp(38px,6.4vw,68px)}
+h2{font-weight:700;font-size:clamp(30px,4.4vw,46px)}
+h3{font-weight:700;font-size:22px}
+p{margin:0;text-wrap:pretty}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid var(--stamp);outline-offset:3px}
+.hand{font-family:var(--hand);font-weight:400;color:var(--stamp)}
+section{padding-block:56px}
+.sec-h{text-align:center;margin-bottom:34px;display:grid;gap:6px;justify-items:center}
+.sec-h .hand{font-size:26px}
+
+/* вывеска */
+.sign{position:relative;margin-top:max(16px,env(safe-area-inset-top,0px));padding:18px 24px;border-radius:8px;color:var(--on-wood);
+  background:repeating-linear-gradient(90deg,transparent 0 46px,rgba(0,0,0,.14) 46px 47px),linear-gradient(var(--wood-2),var(--wood));
+  box-shadow:0 10px 0 -6px var(--shadow),0 18px 24px -14px var(--shadow);
+  display:flex;justify-content:space-between;align-items:center;gap:16px 28px;flex-wrap:wrap}
+.sign::before,.sign::after{content:"";position:absolute;top:10px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ddd,#666)}
+.sign::before{left:10px}.sign::after{right:10px}
+.brand{display:grid;gap:0}
+.brand b{font:italic 700 clamp(30px,5vw,44px)/1 var(--display)}
+.brand span{font:22px/1.1 var(--hand);color:#F2C777}
+.tags{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tags a{position:relative;text-decoration:none;color:var(--ink);background:var(--paper);padding:7px 16px 7px 28px;font-size:15px;font-weight:700;letter-spacing:.04em;
+  clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);transition:transform .4s var(--ease),background .3s}
+.tags a::before{content:"";position:absolute;left:11px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--wood)}
+.tags a:hover{transform:translateY(-3px) rotate(-2deg);background:#FFF6DE}
+.cart{display:flex;align-items:center;gap:8px;font-weight:700;font-variant-numeric:tabular-nums}
+.cart b{display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:14px;background:var(--stamp);color:var(--on-stamp);font-size:14px;padding:0 8px;transition:transform .4s var(--ease)}
+.cart b.pop{transform:scale(1.35) rotate(-8deg)}
+
+/* первый экран */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:36px;align-items:center;padding-block:48px 24px}
+.label{position:relative;background:var(--paper);padding:38px 36px 34px;transform:rotate(-1deg);box-shadow:0 14px 24px -14px var(--shadow);
+  outline:2px dashed var(--line);outline-offset:-12px}
+.label .hand{font-size:28px}
+.label h1{margin-top:6px}
+.label p{margin-top:18px;max-width:46ch;color:var(--muted);font-size:19px}
+.btns{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+.btn{display:inline-flex;align-items:center;min-height:52px;padding:0 28px;text-decoration:none;font:700 16px var(--body);letter-spacing:.08em;text-transform:uppercase;border:2.5px solid var(--stamp);color:var(--stamp);border-radius:4px;transition:transform .4s var(--ease),background .3s,color .3s}
+.btn:hover{transform:rotate(-1.5deg) translateY(-2px)}
+.btn.s{background:var(--stamp);color:var(--on-stamp)}
+.seal{width:100%;max-width:400px;justify-self:center}
+.seal svg{width:100%;height:auto;display:block}
+.seal text{font:700 21px var(--body);letter-spacing:3px;fill:var(--stamp)}
+.spin{transform-origin:200px 200px;animation:turn 50s linear infinite}
+@keyframes turn{to{transform:rotate(360deg)}}
+
+/* полки */
+.shelves{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:26px}
+.shelf{display:grid;gap:0;text-decoration:none}
+.shelf .pic{aspect-ratio:4/3;background:var(--paper);display:grid;place-items:center;border:2px solid var(--line);border-bottom:0;overflow:hidden}
+.shelf .pic svg{width:70%;height:86%;transition:transform .8s var(--ease)}
+.shelf:hover .pic svg{transform:scale(1.08) rotate(-2deg)}
+.shelf .plank{height:16px;background:linear-gradient(var(--wood-2),var(--wood));box-shadow:0 8px 0 -3px var(--shadow)}
+.shelf .cap{padding:16px 4px 0;display:grid;gap:2px}
+.shelf .cap span{color:var(--muted)}
+
+/* записки гарантии */
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:30px}
+.note{position:relative;background:var(--paper);padding:34px 26px 28px;box-shadow:0 12px 20px -14px var(--shadow);transition:transform .5s var(--ease)}
+.note:nth-child(1){transform:rotate(-1.6deg)}.note:nth-child(2){transform:rotate(1.2deg)}.note:nth-child(3){transform:rotate(-.8deg)}
+.note:hover{transform:rotate(0) translateY(-4px)}
+.note::before{content:"";position:absolute;top:-12px;left:50%;width:84px;height:24px;margin-left:-42px;background:rgba(217,150,28,.45);transform:rotate(-2deg)}
+.note h3{font-family:var(--hand);font-weight:400;font-size:30px;color:var(--stamp);margin-bottom:6px}
+.note p{color:var(--muted)}
+
+/* магазин */
+.chips{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.chip{min-height:46px;padding:0 24px 0 30px;position:relative;border:0;background:var(--paper);color:var(--ink);font:700 15px var(--body);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+  clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);transition:background .3s,color .3s}
+.chip::before{content:"";position:absolute;left:11px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--wood)}
+.chip:hover{background:#FFF6DE}
+.chip.on{background:var(--stamp);color:var(--on-stamp)}
+.chip.on::before{background:var(--on-stamp)}
+.more{text-align:center;color:var(--muted);margin-bottom:30px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px}
+.card{position:relative;background:var(--paper);padding:20px 20px 22px;box-shadow:0 14px 22px -16px var(--shadow);outline:1.5px dashed var(--line);outline-offset:-9px;display:grid;gap:12px;transition:transform .5s var(--ease)}
+.card:nth-child(odd){transform:rotate(-.7deg)}.card:nth-child(even){transform:rotate(.7deg)}
+.card:hover{transform:rotate(0) translateY(-5px)}
+.card[hidden]{display:none}
+.card .art{aspect-ratio:1;display:grid;place-items:center;margin:8px 8px 0}
+.card .art svg{height:68%;max-width:70%}
+.card h3{padding-inline:8px}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-inline:8px}
+.price{position:relative;background:var(--stamp);color:var(--on-stamp);font:700 24px var(--display);padding:4px 18px 4px 26px;clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);font-variant-numeric:tabular-nums}
+.price::before{content:"";position:absolute;left:10px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--paper)}
+.add{min-height:48px;padding:0 20px;border:2.5px solid var(--green);background:transparent;color:var(--green);font:700 15px var(--body);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:background .3s,color .3s,transform .4s var(--ease)}
+.add:hover{background:var(--green);color:var(--paper);transform:rotate(-2deg)}
+.add.done{background:var(--green);color:var(--paper);animation:stamp .5s var(--ease)}
+@keyframes stamp{0%{transform:scale(1.4) rotate(-10deg)}100%{transform:scale(1) rotate(0)}}
+.note-small{margin-top:24px;text-align:center;font-size:15px;color:var(--muted)}
+
+/* отзывы */
+.slips{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:34px;max-width:760px;margin:0 auto}
+.slip{position:relative;background:#FFF7C9;color:#3B2A18;padding:36px 28px 26px;box-shadow:0 14px 20px -14px var(--shadow);transform:rotate(-1.5deg)}
+.slip:nth-child(2){transform:rotate(1.8deg);background:#F6EAB6}
+.slip::before{content:"";position:absolute;top:-9px;left:50%;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#E9674E,#8C2F1B)}
+.slip q{display:block;quotes:none;font:32px/1.2 var(--hand)}
+.slip cite{display:block;margin-top:12px;font-style:normal;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:13px;color:#6B4A1B}
+
+/* билеты: доставка, контакты */
+.tickets{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+.ticket{position:relative;background:var(--paper);padding:20px 22px;box-shadow:0 10px 18px -14px var(--shadow);
+  -webkit-mask:radial-gradient(circle 9px at 0 50%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 9px at 100% 50%,transparent 98%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 9px at 0 50%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 9px at 100% 50%,transparent 98%,#000) right/51% 100% no-repeat}
+.ticket small{display:block;font:700 12px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.ticket b{font:700 20px/1.25 var(--display)}
+
+/* подвал */
+footer{margin-top:40px;margin-bottom:max(24px,env(safe-area-inset-bottom,0px));padding:20px 24px;border-radius:8px;color:var(--on-wood);
+  background:repeating-linear-gradient(90deg,transparent 0 46px,rgba(0,0,0,.14) 46px 47px),linear-gradient(var(--wood-2),var(--wood));
+  display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;font-size:15px}
+.gm{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--on-wood)}
+.coin svg{width:38px;height:38px;display:block;transition:transform 1s var(--ease)}
+.gm:hover .coin svg{transform:rotateY(360deg)}
+.gm small{display:block;font-size:11px;opacity:.75}
+.gm b{font-weight:700;letter-spacing:.04em}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr;padding-top:32px}
+  .seal{order:-1;max-width:240px}
+  .label{padding:30px 24px 28px}
+  .sign{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+
+<div class="wrap">
+  <header class="sign">
+    <div class="brand"><b>Дом мёда</b><span>Усть-Кокса, Горный Алтай</span></div>
+    <nav class="tags" aria-label="Разделы"><a href="#shelves">Продукты</a><a href="#shop">Магазин</a><a href="#reviews">Отзывы</a><a href="#delivery">Доставка</a><a href="#contacts">Контакты</a></nav>
+    <div class="cart" aria-live="polite">Корзина <b id="cn">0</b> <span id="cs">0 ₽</span></div>
+  </header>
+
+  <section class="hero">
+    <div class="label">
+      <div class="hand">прямо с пасеки и из горных трав</div>
+      <h1>Натуральные продукты Горного Алтая</h1>
+      <p>Высокогорный мёд, травы и чаи собственного производства. Без ГМО и искусственных добавок, как делали раньше.</p>
+      <div class="btns"><a class="btn s" href="#shop">В магазин</a><a class="btn" href="#delivery">Как получить</a></div>
+    </div>
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 400 400">
+        <defs><path id="ring" d="M200 200 m-150 0 a150 150 0 1 1 300 0 a150 150 0 1 1 -300 0"/></defs>
+        <circle cx="200" cy="200" r="186" fill="none" stroke="#8C2F1B" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/>
+        <g class="spin"><text><textPath href="#ring" textLength="940" lengthAdjust="spacing">ДОМ МЁДА · ГОРНЫЙ АЛТАЙ · НАТУРАЛЬНО · БЕЗ ДОБАВОК · </textPath></text></g>
+        <circle cx="200" cy="200" r="116" fill="#F7EFDC" stroke="#B99B6A" stroke-width="2"/>
+        <g transform="translate(142 112) scale(1.16)">
+          <rect x="22" y="6" width="56" height="18" rx="4" fill="#D9961C" stroke="#3B2A18" stroke-opacity=".6" stroke-width="1.5"/>
+          <path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#E7A92C" stroke="#3B2A18" stroke-opacity=".6" stroke-width="1.5"/>
+          <rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/>
+          <path d="M50 64l8 16H42z" fill="#4F6B3A"/>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section id="shelves">
+    <div class="sec-h"><span class="hand">на наших полках</span><h2>Три раздела</h2></div>
+    <div class="shelves">
+      <a class="shelf" href="#shop">
+        <div class="pic"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8l36 20v44L50 92 14 72V28z" fill="#E7A92C" stroke="#3B2A18" stroke-opacity=".5" stroke-width="2"/><path d="M50 28l18 10v22L50 70 32 60V38z" fill="#F4C65A" stroke="#3B2A18" stroke-opacity=".4" stroke-width="1.5"/><path d="M50 8v20M86 28L68 38M86 72L68 60M50 92V70M14 72l18-12M14 28l18 10" stroke="#3B2A18" stroke-opacity=".4" stroke-width="1.5"/></svg></div>
+        <div class="plank"></div>
+        <div class="cap"><h3>Алтайский мёд</h3><span>Более 40 трав в составе</span></div>
+      </a>
+      <a class="shelf" href="#shop">
+        <div class="pic"><svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#4F6B3A" stroke-width="3" stroke-linecap="round"><path d="M50 96C50 70 48 44 52 8"/><path d="M50 78C34 74 24 62 22 48C38 52 48 62 50 78" fill="#4F6B3A" fill-opacity=".25"/><path d="M51 58C67 54 77 42 79 28C63 32 53 42 51 58" fill="#4F6B3A" fill-opacity=".25"/><path d="M50 40C36 36 28 26 26 14C40 18 48 28 50 40" fill="#4F6B3A" fill-opacity=".25"/></g></svg></div>
+        <div class="plank"></div>
+        <div class="cap"><h3>Алтайские травы</h3><span>Больше сотни редких видов</span></div>
+      </a>
+      <a class="shelf" href="#shop">
+        <div class="pic"><svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#8C2F1B" stroke-width="2.5" stroke-linecap="round" opacity=".7"><path d="M38 30c-6-7 6-12 0-20"/><path d="M50 30c-6-7 6-12 0-20"/><path d="M62 30c-6-7 6-12 0-20"/></g><path d="M24 40h52c0 26-10 44-26 44S24 66 24 40z" fill="#F7EFDC" stroke="#3B2A18" stroke-opacity=".6" stroke-width="2"/><path d="M76 48c12-2 16 10 4 15" fill="none" stroke="#3B2A18" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/></svg></div>
+        <div class="plank"></div>
+        <div class="cap"><h3>Чаи из трав</h3><span>«Пороги Катуни», «Дар Беловодья»</span></div>
+      </a>
+    </div>
+  </section>
+
+  <section id="quality">
+    <div class="sec-h"><span class="hand">слово мастера</span><h2>Гарантия качества</h2></div>
+    <div class="notes">
+      <div class="note"><h3>Своё производство</h3><p>Только натуральные ингредиенты, без ГМО и искусственных добавок.</p></div>
+      <div class="note"><h3>Особый край</h3><p>Усть-Коксинский район один из самых богатых по биоразнообразию.</p></div>
+      <div class="note"><h3>Старые рецепты</h3><p>Придуманы много веков назад и не потеряли актуальность.</p></div>
+    </div>
+  </section>
+
+  <section id="shop">
+    <div class="sec-h"><span class="hand">выбирайте на вкус</span><h2>Специальные предложения</h2></div>
+    <div class="chips" role="group" aria-label="Разделы магазина">
+      <button type="button" class="chip on" data-f="all">Все</button>
+      <button type="button" class="chip" data-f="honey">Мёд</button>
+      <button type="button" class="chip" data-f="tea">Чаи</button>
+    </div>
+    <p class="more">Ещё в каталоге: травы, пыльца, перга, прополис, подмор, соты.</p>
+    <div class="grid" id="grid"></div>
+    <p class="note-small">Макет оформления. Корзина показывает, как это будет работать, оплата не подключена.</p>
+  </section>
+
+  <section id="reviews">
+    <div class="sec-h"><span class="hand">пишут покупатели</span><h2>Отзывы</h2></div>
+    <div class="slips">
+      <div class="slip"><q>Невероятно вкусный мёд!!!</q><cite>Татьяна</cite></div>
+      <div class="slip"><q>Отлично!</q><cite>Иван</cite></div>
+    </div>
+  </section>
+
+  <section id="delivery" style="padding-bottom:20px">
+    <div class="sec-h"><span class="hand">как забрать заказ</span><h2>Оплата и доставка</h2></div>
+    <div class="tickets">
+      <div class="ticket"><small>Самовывоз</small><b>с. Усть-Кокса, ул. Мичурина, 1-В</b></div>
+      <div class="ticket"><small>Доставка</small><b>Почтой и транспортной компанией</b></div>
+      <div class="ticket"><small>Оплата</small><b>По СБП или при получении</b></div>
+    </div>
+    <p class="note-small">Условия доставки и оплаты здесь примерные, уточним у владельца.</p>
+  </section>
+
+  <section id="contacts" style="padding-top:20px">
+    <div class="sec-h"><span class="hand">заходите в гости</span><h2>Контакты</h2></div>
+    <div class="tickets">
+      <div class="ticket"><small>Адрес</small><b>Республика Алтай, с. Усть-Кокса, ул. Мичурина, 1-В</b></div>
+      <div class="ticket"><small>Телефон</small><b>+7-913-698-0963</b></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Дом мёда, 2026. Тестовый макет, не официальный сайт.</span>
+    <a class="gm" href="https://gusevmade.ru" target="_blank" rel="noopener" aria-label="Дизайн и разработка: GusevMade">
+      <span class="coin" aria-hidden="true"><svg viewBox="0 0 40 40"><defs><linearGradient id="gmG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6D98A"/><stop offset=".55" stop-color="#D9A441"/><stop offset="1" stop-color="#A8741F"/></linearGradient></defs><circle cx="20" cy="20" r="19" fill="url(#gmG)"/><circle cx="20" cy="20" r="15.5" fill="none" stroke="#FBE7B0" stroke-opacity=".7"/><text x="20" y="26.6" text-anchor="middle" font-family="Georgia,serif" font-size="19" font-weight="700" fill="#6B4410">G</text></svg></span>
+      <span><small>Дизайн и разработка</small><b>GusevMade</b></span>
+    </a>
+  </footer>
+</div>
+
+<script>
+var items=[
+ {n:'Медовая композиция с кедровой живицей',p:800,k:'jar',c:'honey'},
+ {n:'Травяной чай «Пороги Катуни»',p:280,k:'pack',c:'tea'},
+ {n:'Травяной чай «Дар Беловодья»',p:280,k:'pack2',c:'tea'}
+];
+var art={
+ jar:'<svg viewBox="0 0 100 130"><rect x="22" y="6" width="56" height="18" rx="4" fill="#D9961C" stroke="#3B2A18" stroke-opacity=".6" stroke-width="1.5"/><path d="M24 24h52v10c8 4 10 12 10 22v52c0 8-6 14-14 14H28c-8 0-14-6-14-14V56c0-10 2-18 10-22z" fill="#E7A92C" stroke="#3B2A18" stroke-opacity=".6" stroke-width="1.5"/><rect x="26" y="58" width="48" height="34" rx="3" fill="#FFF7DF"/><path d="M50 66l8 14H42z" fill="#4F6B3A"/></svg>',
+ pack:'<svg viewBox="0 0 100 130"><rect x="18" y="12" width="64" height="106" rx="5" fill="#8A5A34" stroke="#3B2A18" stroke-opacity=".6" stroke-width="1.5"/><rect x="26" y="26" width="48" height="34" fill="#FFF7DF"/><path d="M26 56l14-14 10 10 10-16 14 20z" fill="#4F6B3A"/><rect x="28" y="72" width="44" height="3" fill="#FFF7DF" opacity=".8"/><rect x="28" y="82" width="34" height="3" fill="#FFF7DF" opacity=".8"/></svg>',
+ pack2:'<svg viewBox="0 0 100 130"><rect x="18" y="12" width="64" height="106" rx="5" fill="#6E8A4F" stroke="#3B2A18" stroke-opacity=".6" stroke-width="1.5"/><rect x="26" y="26" width="48" height="34" fill="#FFF7DF"/><circle cx="62" cy="38" r="6" fill="#D9961C"/><path d="M26 56l16-12 12 8 12-10 8 14z" fill="#8A5A34" fill-opacity=".85"/><rect x="28" y="72" width="44" height="3" fill="#FFF7DF" opacity=".8"/><rect x="28" y="82" width="34" height="3" fill="#FFF7DF" opacity=".8"/></svg>'
+};
+var count=0,sum=0,cn=document.getElementById('cn'),cs=document.getElementById('cs');
+function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₽'}
+var grid=document.getElementById('grid');
+items.forEach(function(it){
+  var el=document.createElement('article');el.className='card';el.dataset.c=it.c;
+  el.innerHTML='<div class="art">'+art[it.k]+'</div><h3>'+it.n+'</h3><div class="row"><span class="price">'+fmt(it.p)+'</span><button type="button" class="add">В корзину</button></div>';
+  var b=el.querySelector('.add');
+  b.addEventListener('click',function(){
+    count++;sum+=it.p;cn.textContent=count;cs.textContent=fmt(sum);
+    cn.classList.add('pop');setTimeout(function(){cn.classList.remove('pop')},300);
+    b.classList.add('done');b.textContent='Принято';
+    setTimeout(function(){b.classList.remove('done');b.textContent='В корзину'},1500);
+  });
+  grid.appendChild(el);
+});
+document.querySelectorAll('.chip').forEach(function(ch){
+  ch.addEventListener('click',function(){
+    document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});
+    ch.classList.add('on');
+    var f=ch.dataset.f;
+    document.querySelectorAll('.card').forEach(function(c){c.hidden=(f!=='all'&&c.dataset.c!==f)});
+  });
+});
+</script>
+</body></html>
