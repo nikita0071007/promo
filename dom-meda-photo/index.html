@@ -54,6 +54,10 @@ section{padding:64px 0}
 .cu .ms a:hover{background:rgba(255,255,255,.18);transform:translateY(-2px)}.cu .ms i{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;color:#fff;flex:none}
 .cu .ms span{display:block}.cu .ms em{display:block;font-style:normal;font-weight:400;font-size:13px;color:#c5d3c7}
 @media (max-width:900px){.cu{grid-template-columns:1fr;padding:28px 22px;gap:22px}}
+.btn,.pc a,.pc button,.sbtn,.cu .ms a,.chips button,.cat{-webkit-tap-highlight-color:transparent;transition:transform .12s,box-shadow .15s,filter .15s,background .2s}
+.btn:active,.pc a:active,.pc button:active,.sbtn:active{transform:scale(.95) translateY(1px);box-shadow:0 2px 6px rgba(190,130,10,.3);filter:brightness(.93)}
+.cu .ms a:active,.cat:active{transform:scale(.97)}.chips button:active{transform:scale(.94)}
+.btn:focus-visible,.pc a:focus-visible,.pc button:focus-visible,.sbtn:focus-visible,.cu a:focus-visible,.chips button:focus-visible,.menu a:focus-visible{outline:3px solid #1f3a2a;outline-offset:3px}
 .shop{display:grid;grid-template-columns:1fr .8fr 1fr;gap:34px;align-items:center}
 .shop img{width:100%;border-radius:20px;display:block;aspect-ratio:4/3;object-fit:cover}
 .shop h2{font-size:clamp(30px,3.6vw,40px);margin-bottom:14px}
