@@ -1,0 +1,74 @@
+<?php
+if (!defined('ABSPATH')) exit;
+
+add_action('after_setup_theme', function () {
+    add_theme_support('title-tag');
+    add_theme_support('post-thumbnails');
+    add_theme_support('html5', array('search-form', 'comment-form', 'gallery', 'caption', 'style', 'script'));
+    add_theme_support('woocommerce');
+});
+
+add_filter('woocommerce_enqueue_styles', '__return_empty_array');
+
+add_action('wp_enqueue_scripts', function () {
+    wp_enqueue_style('dm-fonts', 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Onest:wght@400;500;600&display=swap', array(), null);
+    $v = wp_get_theme()->get('Version');
+    wp_enqueue_style('dm-style', get_stylesheet_uri(), array(), $v);
+    wp_enqueue_style('dm-woo', get_theme_file_uri('woo.css'), array('dm-style'), $v);
+});
+
+add_filter('body_class', function ($c) {
+    if (!is_front_page()) $c[] = 'inner';
+    return $c;
+});
+
+function dm_img($k) {
+    return get_theme_file_uri('img/' . $k . '.jpg');
+}
+
+function dm_cat_url($slug) {
+    $t = get_term_by('slug', $slug, 'product_cat');
+    $u = $t ? get_term_link($t) : '';
+    return is_wp_error($u) || !$u ? wc_get_page_permalink('shop') : $u;
+}
+
+function dm_url($go, $cf = '', $sc = '') {
+    $map = array('home' => '/', 'documents' => '/dokumenty/', 'reviews' => '/otzyvy/', 'payment' => '/oplata/',
+                 'delivery' => '/dostavka/', 'contacts' => '/kontakty/', 'privacy' => '/politika/', 'offer' => '/oferta/');
+    $cats = array('med' => 'k-med', 'tea' => 'k-tea', 'perga' => 'k-perga', 'gift' => 'k-gift');
+    if ($go === 'catalog') return $cf && isset($cats[$cf]) ? dm_cat_url($cats[$cf]) : wc_get_page_permalink('shop');
+    if ($go === 'cart') return wc_get_cart_url();
+    if ($go === 'checkout') return wc_get_checkout_url();
+    $u = home_url(isset($map[$go]) ? $map[$go] : '/');
+    if ($go === 'home' && $sc) $u .= '#' . $sc;
+    return $u;
+}
+
+function dm_chips() {
+    $items = array('' => 'Все', 'k-med' => 'Мёд', 'k-tea' => 'Травы и чаи', 'k-perga' => 'Перга и пчелопродукты', 'k-gift' => 'Горные дары Алтая');
+    $cur = is_product_category() ? get_queried_object()->slug : '';
+    echo '<div class="chips">';
+    foreach ($items as $slug => $name) {
+        $u = $slug ? dm_cat_url($slug) : wc_get_page_permalink('shop');
+        echo '<a class="dm-chip' . ($slug === $cur ? ' on' : '') . '" href="' . esc_url($u) . '">' . esc_html($name) . '</a>';
+    }
+    echo '</div>';
+}
+
+// Каталог: 12 карточек на страницу, чтобы всё помещалось, сетка по 4
+add_filter('loop_shop_per_page', function () { return 40; });
+add_filter('loop_shop_columns', function () { return 4; });
+add_filter('woocommerce_show_page_title', '__return_false');
+add_filter('woocommerce_breadcrumb_defaults', function ($a) { $a['wrap_before'] = '<nav class="dm-bc">'; $a['wrap_after'] = '</nav>'; return $a; });
+remove_action('woocommerce_before_main_content', 'woocommerce_breadcrumb', 20);
+remove_action('woocommerce_before_shop_loop', 'woocommerce_result_count', 20);
+remove_action('woocommerce_before_shop_loop', 'woocommerce_catalog_ordering', 30);
+remove_action('woocommerce_before_shop_loop_item_title', 'woocommerce_show_product_loop_sale_flash', 10);
+remove_action('woocommerce_before_single_product_summary', 'woocommerce_show_product_sale_flash', 10);
+remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40);
+remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_sharing', 50);
+
+// Корзина: блок «Как мы считаем цену»
+add_action('woocommerce_after_cart', function () { get_template_part('price-note'); });
+
+// Админ-панель сверху на тестовой версии не нужна покупателям, но владельцу удобна: оставляем
