@@ -152,7 +152,7 @@ add_filter('woocommerce_enqueue_styles', '__return_empty_array');
 
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('dm-fonts', 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Onest:wght@400;500;600&display=swap', array(), null);
-    $v = wp_get_theme()->get('Version');
+    $v = wp_get_theme()->get('Version') . '.' . filemtime(get_theme_file_path('woo.css'));
     wp_enqueue_style('dm-style', get_stylesheet_uri(), array(), $v);
     wp_enqueue_style('dm-woo', get_theme_file_uri('woo.css'), array('dm-style'), $v);
 });
