@@ -77,3 +77,48 @@ add_action('woocommerce_login_form_end', function () {
     $html = apply_filters('dm_social_login_buttons', '');
     if ($html) echo '<div class="dm-social"><span>или войти через</span>' . $html . '</div>';
 });
+
+/* ---------- Регистрация: имя, телефон, почта ---------- */
+
+add_action('woocommerce_register_form_start', function () {
+    $n = isset($_POST['dm_reg_name']) ? esc_attr(wp_unslash($_POST['dm_reg_name'])) : '';
+    $p = isset($_POST['dm_reg_phone']) ? esc_attr(wp_unslash($_POST['dm_reg_phone'])) : '';
+    echo '<p class="woocommerce-form-row form-row"><label for="dm_reg_name">Как к вам обращаться (ФИО) <span class="required">*</span></label><input type="text" class="input-text" name="dm_reg_name" id="dm_reg_name" autocomplete="name" value="' . $n . '" required></p>';
+    echo '<p class="woocommerce-form-row form-row"><label for="dm_reg_phone">Телефон <span class="required">*</span></label><input type="tel" class="input-text" name="dm_reg_phone" id="dm_reg_phone" autocomplete="tel" placeholder="+7 ___ ___-__-__" value="' . $p . '" required></p>';
+});
+
+add_filter('woocommerce_registration_errors', function ($errors, $username, $email) {
+    $n = isset($_POST['dm_reg_name']) ? trim(wp_unslash($_POST['dm_reg_name'])) : '';
+    $p = isset($_POST['dm_reg_phone']) ? preg_replace('/\D+/', '', wp_unslash($_POST['dm_reg_phone'])) : '';
+    if ($n === '') $errors->add('dm_name', 'Укажите имя.');
+    if (strlen($p) < 10) $errors->add('dm_phone', 'Укажите телефон, чтобы мы могли с вами связаться.');
+    return $errors;
+}, 10, 3);
+
+add_action('woocommerce_created_customer', function ($uid) {
+    $n = isset($_POST['dm_reg_name']) ? sanitize_text_field(wp_unslash($_POST['dm_reg_name'])) : '';
+    $p = isset($_POST['dm_reg_phone']) ? sanitize_text_field(wp_unslash($_POST['dm_reg_phone'])) : '';
+    if ($n) {
+        update_user_meta($uid, 'first_name', $n);
+        update_user_meta($uid, 'billing_first_name', $n);
+        wp_update_user(array('ID' => $uid, 'display_name' => $n));
+    }
+    if ($p) update_user_meta($uid, 'billing_phone', $p);
+});
+
+/* ---------- Мои данные: телефон ---------- */
+
+add_action('woocommerce_edit_account_form', function () {
+    $v = get_user_meta(get_current_user_id(), 'billing_phone', true);
+    echo '<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide"><label for="dm_phone">Телефон <span class="required">*</span></label><input type="tel" class="woocommerce-Input input-text" name="dm_phone" id="dm_phone" value="' . esc_attr($v) . '" required></p>';
+});
+
+add_action('woocommerce_save_account_details_errors', function ($errors) {
+    $p = isset($_POST['dm_phone']) ? preg_replace('/\D+/', '', wp_unslash($_POST['dm_phone'])) : '';
+    if (strlen($p) < 10) $errors->add('dm_phone', 'Укажите телефон.');
+});
+
+add_action('woocommerce_save_account_details', function ($uid) {
+    if (isset($_POST['dm_phone'])) update_user_meta($uid, 'billing_phone', sanitize_text_field(wp_unslash($_POST['dm_phone'])));
+    if (!empty($_POST['account_first_name'])) update_user_meta($uid, 'billing_first_name', sanitize_text_field(wp_unslash($_POST['account_first_name'])));
+});
