@@ -194,8 +194,20 @@ add_filter('woocommerce_checkout_fields', function ($f) {
     $b['billing_email']['priority'] = 30;
     $b['billing_address_1']['label'] = 'Город и адрес доставки или пункт выдачи';
     $b['billing_address_1']['priority'] = 40;
+    $b['dm_marketing'] = array(
+        'type' => 'checkbox',
+        'label' => 'Хочу получать информацию об акциях и новинках (необязательно). <a href="' . esc_url(home_url('/politika/')) . '" target="_blank" rel="noopener">Политика конфиденциальности</a>',
+        'required' => false,
+        'class' => array('form-row-wide'),
+        'priority' => 50,
+    );
     unset($f['shipping']);
     return $f;
+});
+
+add_action('woocommerce_admin_order_data_after_billing_address', function ($order) {
+    $v = $order->get_meta('_dm_marketing');
+    echo '<p><strong>Согласие на рекламную рассылку:</strong> ' . ($v ? 'да' : 'нет') . '</p>';
 });
 
 add_filter('woocommerce_ship_to_different_address_checked', '__return_false');
