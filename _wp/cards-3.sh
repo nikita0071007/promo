@@ -19,7 +19,7 @@ if [ -n "$B" ]; then
   W post update $B --post_title="Лист бадана, 100 г" --post_name="list-badana-100g" \
     --post_excerpt="Листья бадана толстолистного сушёные, упаковка 100 г." \
     --post_content="Листья бадана толстолистного сушёные. Упаковка 100 г. Срок годности и условия хранения указаны на упаковке." >/dev/null
-  AID=$(W media import $D/badan-list.jpg --post_id=$B --title="Лист бадана 100 г" --porcelain)
+  AID=$(W media import /var/www/html/wp-content/dmph/badan-list.jpg --post_id=$B --title="Лист бадана 100 г" --porcelain)
   W post meta update $B _thumbnail_id $AID >/dev/null
   echo "OK Лист бадана → товар $B (цена прежняя: $(W post meta get $B _price))"
 else echo "НЕ НАЙДЕН бадан"; fi

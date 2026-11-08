@@ -13,7 +13,7 @@ W() {
 }
 M=$(W post list --post_type=product --post_status=publish,private,draft --s="Маралий" --field=ID | head -1)
 if [ -n "$M" ]; then
-  AID=$(W media import $D/maralij-koren.jpg --post_id=$M --title="Маралий корень 100 г" --porcelain)
+  AID=$(W media import /var/www/html/wp-content/dmph/maralij-koren.jpg --post_id=$M --title="Маралий корень 100 г" --porcelain)
   W post meta update $M _thumbnail_id $AID >/dev/null
   echo "OK Маралий корень → товар $M"
 else echo "НЕ НАЙДЕН Маралий"; fi
