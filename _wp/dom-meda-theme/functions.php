@@ -29,6 +29,12 @@ function dm_shop_url() {
     return $p ? get_permalink($p) : home_url('/shop/');
 }
 
+function dm_account_url() {
+    $id = function_exists('wc_get_page_id') ? (int) wc_get_page_id('myaccount') : 0;
+    if ($id > 0 && $id !== (int) get_option('page_on_front') && get_post_status($id) === 'publish') return get_permalink($id);
+    return home_url('/my-account/');
+}
+
 function dm_img($k) {
     return get_theme_file_uri('img/' . $k . '.jpg');
 }

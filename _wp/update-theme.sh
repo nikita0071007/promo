@@ -15,4 +15,9 @@ W() {
 }
 SID=$(W post list --post_type=page --post_status=publish --name=shop --field=ID | head -1)
 if [ -n "$SID" ]; then W option update woocommerce_shop_page_id "$SID" >/dev/null; echo "Страница магазина: $SID"; fi
+MID=$(W post list --post_type=page --post_status=publish --s='woocommerce_my_account' --field=ID | head -1)
+if [ -z "$MID" ]; then MID=$(W post create --post_type=page --post_status=publish --post_title="Мой аккаунт" --post_name=my-account --post_content='[woocommerce_my_account]' --porcelain); fi
+W option update woocommerce_myaccount_page_id "$MID" >/dev/null
+echo "Личный кабинет: страница $MID"
+W rewrite flush >/dev/null 2>&1 || true
 echo UPDATE_DONE

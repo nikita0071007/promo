@@ -45,7 +45,7 @@ for f in DOCS.glob("*.pdf"):
 # ---------- шапка и подвал ----------
 head = html[html.index('<header class="top">'): html.index("</header>") + 9]
 head = conv(head)
-head = head.replace('href="<?php echo esc_url(dm_url(\'home\',\'\',\'\')); ?>" id="acc"', 'href="<?php echo esc_url(wc_get_page_permalink(\'myaccount\')); ?>"')
+head = head.replace('href="<?php echo esc_url(dm_url(\'home\',\'\',\'\')); ?>" id="acc"', 'href="<?php echo esc_url(dm_account_url()); ?>"')
 head = head.replace('<b id="cn">0</b>', '<b id="cn"><?php echo function_exists(\'WC\') && WC()->cart ? (int) WC()->cart->get_cart_contents_count() : 0; ?></b>')
 head = head.replace('<a class="logo" href="<?php echo esc_url(dm_url(\'home\',\'\',\'\')); ?>" data-go="home">', '<a class="logo" href="<?php echo esc_url(home_url(\'/\')); ?>">')
 
@@ -162,6 +162,12 @@ function dm_shop_url() {
     if ($id > 0 && $id !== (int) get_option('page_on_front')) return get_permalink($id);
     $p = get_page_by_path('shop');
     return $p ? get_permalink($p) : home_url('/shop/');
+}
+
+function dm_account_url() {
+    $id = function_exists('wc_get_page_id') ? (int) wc_get_page_id('myaccount') : 0;
+    if ($id > 0 && $id !== (int) get_option('page_on_front') && get_post_status($id) === 'publish') return get_permalink($id);
+    return home_url('/my-account/');
 }
 
 function dm_img($k) {
