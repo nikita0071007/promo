@@ -89,6 +89,11 @@ page("dokumenty", ["documents"])
 page("otzyvy", ["reviews"])
 page("oferta", ["offer"])
 page("politika", ["privacy"])
+import os as _os
+for _slug in ("oferta", "politika"):
+    _f = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "legal", _slug + ".html")
+    if _os.path.exists(_f):
+        w("page-%s.php" % _slug, "<?php get_header(); ?>\n" + open(_f, encoding="utf-8").read() + "\n<?php get_footer(); ?>\n")
 page("kontakty", ["contact", "shop", "delivery"])
 
 # Блок «Как мы считаем цену» для карточки товара и корзины
