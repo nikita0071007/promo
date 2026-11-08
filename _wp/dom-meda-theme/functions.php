@@ -22,6 +22,13 @@ add_filter('body_class', function ($c) {
     return $c;
 });
 
+function dm_shop_url() {
+    $id = function_exists('wc_get_page_id') ? (int) wc_get_page_id('shop') : 0;
+    if ($id > 0 && $id !== (int) get_option('page_on_front')) return get_permalink($id);
+    $p = get_page_by_path('shop');
+    return $p ? get_permalink($p) : home_url('/shop/');
+}
+
 function dm_img($k) {
     return get_theme_file_uri('img/' . $k . '.jpg');
 }
@@ -29,14 +36,14 @@ function dm_img($k) {
 function dm_cat_url($slug) {
     $t = get_term_by('slug', $slug, 'product_cat');
     $u = $t ? get_term_link($t) : '';
-    return is_wp_error($u) || !$u ? wc_get_page_permalink('shop') : $u;
+    return is_wp_error($u) || !$u ? dm_shop_url() : $u;
 }
 
 function dm_url($go, $cf = '', $sc = '') {
     $map = array('home' => '/', 'documents' => '/dokumenty/', 'reviews' => '/otzyvy/', 'payment' => '/oplata/',
                  'delivery' => '/dostavka/', 'contacts' => '/kontakty/', 'privacy' => '/politika/', 'offer' => '/oferta/');
     $cats = array('med' => 'k-med', 'tea' => 'k-tea', 'perga' => 'k-perga', 'gift' => 'k-gift');
-    if ($go === 'catalog') return $cf && isset($cats[$cf]) ? dm_cat_url($cats[$cf]) : wc_get_page_permalink('shop');
+    if ($go === 'catalog') return $cf && isset($cats[$cf]) ? dm_cat_url($cats[$cf]) : dm_shop_url();
     if ($go === 'cart') return wc_get_cart_url();
     if ($go === 'checkout') return wc_get_checkout_url();
     $u = home_url(isset($map[$go]) ? $map[$go] : '/');
@@ -49,7 +56,7 @@ function dm_chips() {
     $cur = is_product_category() ? get_queried_object()->slug : '';
     echo '<div class="chips">';
     foreach ($items as $slug => $name) {
-        $u = $slug ? dm_cat_url($slug) : wc_get_page_permalink('shop');
+        $u = $slug ? dm_cat_url($slug) : dm_shop_url();
         echo '<a class="dm-chip' . ($slug === $cur ? ' on' : '') . '" href="' . esc_url($u) . '">' . esc_html($name) . '</a>';
     }
     echo '</div>';

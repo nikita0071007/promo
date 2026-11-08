@@ -59,13 +59,13 @@ foreach ($x->query('//li[contains(@class,"product")]') as $li) {
 $np = 0; $withPhoto = 0; $withForm = 0; $noDesc = [];
 foreach ($prods as [$h, $title]) {
     $p = path($h); $r = req($p); $np++;
-    if ($r['st'] !== 200) { $bad[] = "Товар «$title»: код {$r['st']}"; continue; }
+    if ($r['st'] !== 200) { $bad[] = "Товар «{$title}»: код {$r['st']}"; continue; }
     $xp = dom($r['body']);
     $im = $xp->query('//div[contains(@class,"images")]//img');
     $src = $im->length ? $im->item(0)->getAttribute('src') : '';
-    if (!$src || strpos($src, 'placeholder') !== false) $bad[] = "Товар «$title»: нет фото"; else { $withPhoto++; $c = imgcheck($src); if ($c[0] !== 200) $bad[] = "Товар «$title»: фото не грузится (код {$c[0]})"; }
+    if (!$src || strpos($src, 'placeholder') !== false) $bad[] = "Товар «{$title}»: нет фото"; else { $withPhoto++; $c = imgcheck($src); if ($c[0] !== 200) $bad[] = "Товар «{$title}»: фото не грузится (код {$c[0]})"; }
     $forms = $xp->query('//form[contains(@class,"dm-form")]')->length; $btn = $xp->query('//button[contains(@class,"single_add_to_cart_button")]')->length;
-    if ($forms) $withForm++; elseif (!$btn) $bad[] = "Товар «$title»: нет кнопки «В корзину»";
+    if ($forms) $withForm++; elseif (!$btn) $bad[] = "Товар «{$title}»: нет кнопки «В корзину»";
     if (!$xp->query('//*[contains(@class,"woocommerce-product-details__short-description")]|//*[@id="tab-description"]')->length) $noDesc[] = $title;
 }
 echo "ТОВАРЫ: $np, с фото $withPhoto, с выбором фасовки $withForm, без описания " . count($noDesc) . "\n";
