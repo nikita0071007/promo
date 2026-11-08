@@ -2,12 +2,13 @@
 /**
  * Plugin Name: Дом мёда — магазин
  * Description: Цена по фасовке (вес + тара), оформление заказа без облачных касс и оплата по ссылке напрямую на счёт ИП.
- * Version: 0.3.0
+ * Version: 0.4.0
  * Author: GusevMade
  */
 if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/includes/assembly.php';
 require_once __DIR__ . '/includes/account.php';
+require_once __DIR__ . '/includes/extras.php';
 
 /* ---------- Модели цены ---------- */
 
@@ -209,6 +210,7 @@ add_filter('woocommerce_checkout_fields', function ($f) {
 
 add_action('woocommerce_checkout_create_order', function ($order) {
     $order->update_meta_data('_dm_marketing', !empty($_POST['dm_marketing']) ? 1 : 0);
+    if (!empty($_POST['dm_marketing'])) $order->update_meta_data('_dm_marketing_ts', time());
 });
 
 add_action('woocommerce_admin_order_data_after_billing_address', function ($order) {
