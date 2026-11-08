@@ -45,7 +45,7 @@ function dm_url($go, $cf = '', $sc = '') {
 }
 
 function dm_chips() {
-    $items = array('' => 'Все', 'k-med' => 'Мёд', 'k-tea' => 'Травы и чаи', 'k-perga' => 'Перга и пчелопродукты', 'k-gift' => 'Горные дары Алтая');
+    $items = array('' => 'Все', 'k-med' => 'Мёд', 'k-tea' => 'Травы и чаи', 'k-perga' => 'Пыльца и пчелопродукты', 'k-gift' => 'Горные дары Алтая');
     $cur = is_product_category() ? get_queried_object()->slug : '';
     echo '<div class="chips">';
     foreach ($items as $slug => $name) {

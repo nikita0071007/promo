@@ -89,6 +89,10 @@ form.cart{margin:0}form.cart .quantity{display:inline-block;margin-right:10px}
 .star-rating span::before{content:"★★★★★";color:#E8A21F;position:absolute;left:0;top:0}
 .woocommerce-product-rating{display:flex;gap:10px;align-items:center;margin:0 0 6px;color:var(--muted);font-size:14.5px}
 p.stars a{color:#E8A21F}
+
+/* шапка под панелью администратора WordPress (когда владелец вошёл в сайт) */
+.admin-bar .top{top:var(--wp-admin--admin-bar--height,32px)}
+.admin-bar #up{bottom:84px}
 .screen-reader-text{position:absolute;left:-9999px}
 @media (max-width:900px){.woocommerce ul.products{grid-template-columns:1fr 1fr}.woocommerce div.product,.woocommerce form.checkout,.woocommerce-account .woocommerce,.woocommerce-account .u-columns{grid-template-columns:1fr}.woocommerce form.checkout #customer_details,.woocommerce form.checkout #order_review_heading,.woocommerce form.checkout #order_review{grid-column:1;grid-row:auto}.woocommerce form.checkout{padding:22px 18px}.woocommerce table.shop_table_responsive tr td::before{font-weight:600}}
 @media (max-width:520px){.woocommerce ul.products{grid-template-columns:1fr}}
