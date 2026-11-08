@@ -1,0 +1,178 @@
+<?php
+/**
+ * Сборка заказов: взвешивание, точная сумма, ссылка на оплату клиенту.
+ * Статусы: «Ждёт взвешивания» (on-hold) → «Ждёт оплаты» (dm-await-pay) → «Оплачен» (processing) → «Отправлен» (completed).
+ */
+if (!defined('ABSPATH')) exit;
+
+/* ---------- Статусы ---------- */
+
+add_action('init', function () {
+    register_post_status('wc-dm-await-pay', array(
+        'label' => 'Ждёт оплаты',
+        'public' => false,
+        'exclude_from_search' => false,
+        'show_in_admin_all_list' => true,
+        'show_in_admin_status_list' => true,
+        'label_count' => _n_noop('Ждёт оплаты <span class="count">(%s)</span>', 'Ждёт оплаты <span class="count">(%s)</span>'),
+    ));
+});
+
+add_filter('wc_order_statuses', function ($s) {
+    $s['wc-on-hold'] = 'Ждёт взвешивания';
+    $s['wc-processing'] = 'Оплачен';
+    $s['wc-completed'] = 'Отправлен';
+    $n = array();
+    foreach ($s as $k => $v) {
+        $n[$k] = $v;
+        if ($k === 'wc-on-hold') $n['wc-dm-await-pay'] = 'Ждёт оплаты';
+    }
+    return $n;
+});
+
+/* ---------- Позиции заказа, которые взвешиваются ---------- */
+
+function dm_asm_lines($order) {
+    $out = array();
+    foreach ($order->get_items('line_item') as $id => $item) {
+        $pid = $item->get_product_id();
+        $k = dm_model($pid);
+        if (!in_array($k, array('jar', 'perga', 'propolis', 'comb'), true)) continue;
+        $kg = (float) get_post_meta($pid, '_dm_kg', true);
+        $label = $item->get_meta('Фасовка');
+        $tare = 0; $g = 0;
+        foreach (dm_models()[$k]['sizes'] as $s) {
+            if ($s['label'] === $label) { $tare = isset($s['tare']) ? $s['tare'] : 0; $g = isset($s['g']) ? $s['g'] : 0; break; }
+        }
+        $qty = max(1, (int) $item->get_quantity());
+        $out[$id] = array('item' => $item, 'kg' => $kg, 'tare' => $tare, 'qty' => $qty, 'approx' => $g * $qty, 'label' => $label, 'name' => $item->get_name());
+    }
+    return $out;
+}
+
+function dm_asm_exact($line, $w) {
+    return round($line['kg'] * $w / 1000 + $line['tare'] * $line['qty']);
+}
+
+function dm_asm_money($n) {
+    return number_format($n, 0, '', ' ') . ' ₽';
+}
+
+/* ---------- Блок на странице заказа ---------- */
+
+add_action('add_meta_boxes', function () {
+    if (!function_exists('wc_get_page_screen_id')) return;
+    add_meta_box('dm_asm', 'Сборка заказа: взвешивание и ссылка на оплату', 'dm_asm_box', wc_get_page_screen_id('shop-order'), 'normal', 'high');
+});
+
+function dm_asm_box($p) {
+    $order = ($p instanceof WP_Post) ? wc_get_order($p->ID) : $p;
+    if (!$order) return;
+    wp_nonce_field('dm_asm', 'dm_asm_nonce');
+    $lines = dm_asm_lines($order);
+    echo '<style>.dm-asm td,.dm-asm th{padding:6px 8px;text-align:left}.dm-asm input[type=number]{width:90px}.dm-asm .tot{font-size:15px;margin:10px 0}</style>';
+    if (!$lines) {
+        echo '<p>В заказе нет товаров на развес: взвешивать нечего. Ссылку на оплату можно отправить сразу.</p>';
+    } else {
+        echo '<p>Впишите фактический вес в граммах (общий для всех банок одной позиции). Сумма пересчитается: цена за кг × вес + тара.</p>';
+        echo '<table class="dm-asm widefat"><thead><tr><th>Товар</th><th>Фасовка в заказе</th><th>Кол-во</th><th>Вес по факту, г</th><th>Сумма</th></tr></thead><tbody>';
+        foreach ($lines as $id => $l) {
+            $w = $l['item']->get_meta('_dm_w');
+            echo '<tr><td>' . esc_html($l['name']) . '</td><td>' . esc_html($l['label']) . '</td><td>' . (int) $l['qty'] . '</td>';
+            echo '<td><input type="number" min="0" step="1" class="dm-w" name="dm_w[' . (int) $id . ']" value="' . esc_attr($w) . '" placeholder="' . (int) $l['approx'] . '" data-kg="' . esc_attr($l['kg']) . '" data-tare="' . esc_attr($l['tare'] * $l['qty']) . '"></td>';
+            echo '<td class="dm-sum">' . esc_html(dm_asm_money($l['item']->get_total())) . '</td></tr>';
+        }
+        echo '</tbody></table>';
+    }
+    $url = $order->get_meta('_dm_pay_url');
+    echo '<p style="margin-top:14px"><label><strong>Ссылка на оплату</strong> (из банка, на точную сумму):<br><input type="url" name="dm_pay_url" value="' . esc_attr($url) . '" style="width:100%" placeholder="https://..."></label></p>';
+    echo '<p class="tot">Итого сейчас: <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong></p>';
+    echo '<p><button type="submit" name="dm_do" value="recalc" class="button">Сохранить вес и пересчитать</button> ';
+    echo '<button type="submit" name="dm_do" value="send" class="button button-primary">Пересчитать и отправить ссылку клиенту</button></p>';
+    echo '<p class="description">После отправки статус станет «Ждёт оплаты». Когда деньги поступили, поставьте статус «Оплачен», а при отправке посылки — «Отправлен».</p>';
+    echo '<script>(function(){var rows=document.querySelectorAll(".dm-w");function f(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")+" ₽"}rows.forEach(function(i){i.addEventListener("input",function(){var w=parseFloat(i.value);if(!(w>0))return;var s=i.closest("tr").querySelector(".dm-sum");s.textContent=f(parseFloat(i.dataset.kg)*w/1000+parseFloat(i.dataset.tare))})})})();</script>';
+}
+
+/* ---------- Сохранение, пересчёт, отправка ---------- */
+
+add_action('woocommerce_process_shop_order_meta', function ($order_id) {
+    if (empty($_POST['dm_asm_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['dm_asm_nonce'])), 'dm_asm')) return;
+    if (!current_user_can('edit_shop_orders')) return;
+    $order = wc_get_order($order_id);
+    if (!$order) return;
+
+    $url = isset($_POST['dm_pay_url']) ? esc_url_raw(trim(wp_unslash($_POST['dm_pay_url']))) : '';
+    $order->update_meta_data('_dm_pay_url', $url);
+
+    $do = isset($_POST['dm_do']) ? sanitize_key($_POST['dm_do']) : '';
+    if ($do === 'recalc' || $do === 'send') {
+        $ws = isset($_POST['dm_w']) && is_array($_POST['dm_w']) ? wp_unslash($_POST['dm_w']) : array();
+        $changed = array();
+        foreach (dm_asm_lines($order) as $id => $l) {
+            $w = isset($ws[$id]) ? (float) $ws[$id] : 0;
+            if ($w <= 0) continue;
+            $sum = dm_asm_exact($l, $w);
+            $l['item']->update_meta_data('_dm_w', $w);
+            $l['item']->update_meta_data('Вес по факту, г', $w);
+            $l['item']->set_subtotal($sum);
+            $l['item']->set_total($sum);
+            $l['item']->save();
+            $changed[] = $l['name'] . ': ' . (int) $w . ' г = ' . dm_asm_money($sum);
+        }
+        $order->calculate_totals(false);
+        if ($changed) $order->add_order_note('Взвешено. ' . implode('; ', $changed) . '. Итого ' . dm_asm_money($order->get_total()));
+    }
+    $order->save();
+
+    if ($do === 'send') {
+        if (!$url || stripos($url, 'https://') !== 0) {
+            $order->add_order_note('Ссылка не отправлена: укажите ссылку на оплату (https://...).');
+            return;
+        }
+        $to = $order->get_billing_email();
+        if (!$to) { $order->add_order_note('Ссылка не отправлена: у клиента нет почты.'); return; }
+        $mailer = WC()->mailer();
+        $rows = '';
+        foreach ($order->get_items('line_item') as $item) {
+            $rows .= '<li>' . esc_html($item->get_name()) . ' — ' . esc_html($item->get_meta('Фасовка')) . ' × ' . (int) $item->get_quantity() . ': ' . esc_html(dm_asm_money($item->get_total())) . '</li>';
+        }
+        $body = '<p>Здравствуйте, ' . esc_html($order->get_billing_first_name()) . '!</p>'
+            . '<p>Ваш заказ №' . esc_html($order->get_order_number()) . ' собран и взвешен. Точная сумма: <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>.</p>'
+            . '<ul>' . $rows . '</ul>'
+            . '<p>Оплатить можно по ссылке картой МИР, Сбербанк или через СБП. Деньги поступают напрямую на расчётный счёт ИП, после оплаты придёт чек.</p>'
+            . '<p><a href="' . esc_url($url) . '" style="display:inline-block;background:#e8a317;color:#222;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:bold">Оплатить ' . esc_html(dm_asm_money($order->get_total())) . '</a></p>'
+            . '<p>Если кнопка не открывается, скопируйте ссылку: ' . esc_html($url) . '</p>'
+            . '<p>Вопросы: +7 913 995-97-80, +7 913 698-09-63.</p>';
+        $sent = $mailer->send($to, 'Заказ №' . $order->get_order_number() . ': точная сумма и ссылка на оплату', $mailer->wrap_message('Ваш заказ собран', $body));
+        $order->update_status('dm-await-pay', ($sent ? 'Письмо со ссылкой на оплату отправлено на ' . $to : 'ПИСЬМО НЕ УШЛО на ' . $to . ' (проверьте настройки почты)') . '. Сумма ' . dm_asm_money($order->get_total()) . '.');
+    }
+}, 60);
+
+/* ---------- Пункт меню слева: «Сборка заказов» ---------- */
+
+add_action('admin_menu', function () {
+    $n = function_exists('wc_orders_count') ? (int) wc_orders_count('on-hold') : 0;
+    $bubble = $n ? ' <span class="awaiting-mod">' . $n . '</span>' : '';
+    add_menu_page('Сборка заказов', 'Сборка заказов' . $bubble, 'edit_shop_orders', 'dm-assembly', 'dm_asm_page', 'dashicons-archive', 3);
+});
+
+function dm_asm_table($orders, $empty) {
+    if (!$orders) { echo '<p>' . esc_html($empty) . '</p>'; return; }
+    echo '<table class="widefat striped"><thead><tr><th>№</th><th>Дата</th><th>Клиент</th><th>Телефон</th><th>Состав</th><th>Сумма</th><th></th></tr></thead><tbody>';
+    foreach ($orders as $o) {
+        $names = array();
+        foreach ($o->get_items('line_item') as $it) $names[] = $it->get_name() . ' (' . $it->get_meta('Фасовка') . ') × ' . $it->get_quantity();
+        echo '<tr><td>' . esc_html($o->get_order_number()) . '</td><td>' . esc_html(wc_format_datetime($o->get_date_created(), 'd.m H:i')) . '</td><td>' . esc_html($o->get_billing_first_name()) . '</td><td>' . esc_html($o->get_billing_phone()) . '</td><td>' . esc_html(implode('; ', $names)) . '</td><td>' . esc_html(dm_asm_money($o->get_total())) . '</td>';
+        echo '<td><a class="button button-primary" href="' . esc_url($o->get_edit_order_url()) . '">Собрать</a></td></tr>';
+    }
+    echo '</tbody></table>';
+}
+
+function dm_asm_page() {
+    echo '<div class="wrap"><h1>Сборка заказов</h1>';
+    echo '<h2>Ждут взвешивания</h2>';
+    dm_asm_table(wc_get_orders(array('status' => array('on-hold'), 'limit' => 50, 'orderby' => 'date', 'order' => 'ASC')), 'Новых заказов нет.');
+    echo '<h2 style="margin-top:28px">Ждут оплаты</h2>';
+    dm_asm_table(wc_get_orders(array('status' => array('dm-await-pay'), 'limit' => 50, 'orderby' => 'date', 'order' => 'ASC')), 'Нет заказов, ожидающих оплаты.');
+    echo '</div>';
+}
