@@ -36,11 +36,9 @@ function dm_models() {
             array('label' => 'шарик ≈ 30 г',  'g' => 30),
             array('label' => '≈ 60 г',        'g' => 60),
         ), 'note' => 'Вес примерный.'),
-        'comb'     => array('name' => 'Мёд в сотах: цена за кг', 'sizes' => array(
-            array('label' => '≈ 300 г', 'g' => 300),
-            array('label' => '≈ 600 г', 'g' => 600),
-            array('label' => '≈ 1 кг',  'g' => 1000),
-        ), 'note' => 'Вес примерный.'),
+        'comb'     => array('name' => 'Мёд в сотах: рамка, цена за кг', 'sizes' => array(
+            array('label' => 'рамка ≈ 1,5–2 кг (от 1,5 кг)', 'g' => 1500),
+        ), 'note' => 'Соты продаются целой рамкой, мы их не режем. Вес рамки примерно 1,5–2 кг, итоговая сумма уточняется после взвешивания.'),
     );
     return $m;
 }
@@ -98,7 +96,7 @@ add_filter('woocommerce_get_price_html', function ($html, $product) {
     $k = dm_model($pid);
     if (!$k) return $html;
     $kg = (float) get_post_meta($pid, '_dm_kg', true);
-    if ($k === 'jar') return '<span class="price">' . dm_fmt($kg) . "\xC2\xA0₽ за 1 кг</span>";
+    if ($k === 'jar' || $k === 'comb') return '<span class="price">' . dm_fmt($kg) . "\xC2\xA0₽ за 1 кг</span>";
     if ($k === 'propolis') return '<span class="price">' . dm_fmt($kg / 1000) . "\xC2\xA0₽ за 1 г</span>";
     if ($k === 'perga') return '<span class="price">' . dm_fmt($kg / 10) . "\xC2\xA0₽ за 100 г</span>";
     return '<span class="price">от ' . dm_fmt(dm_price($pid, 0)) . "\xC2\xA0₽</span>";
