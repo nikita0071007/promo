@@ -86,11 +86,32 @@ function dm_asm_box($p) {
     }
     $url = $order->get_meta('_dm_pay_url');
     echo '<p style="margin-top:14px"><label><strong>Ссылка на оплату</strong> (из банка, на точную сумму):<br><input type="url" name="dm_pay_url" value="' . esc_attr($url) . '" style="width:100%" placeholder="https://..."></label></p>';
-    echo '<p class="tot">Итого сейчас: <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong></p>';
+    $others = (float) $order->get_total();
+    foreach ($lines as $l) $others -= (float) $l['item']->get_total();
+    $num = (int) round($order->get_total());
+    echo '<p class="tot">Итого сейчас: <strong id="dm-tot">' . esc_html(dm_asm_money($order->get_total())) . '</strong> '
+        . '<button type="button" class="button" id="dm-copy-sum" data-v="' . $num . '">Скопировать сумму для банка: <span id="dm-sum-num">' . $num . '</span></button></p>';
+    $first = $order->get_billing_first_name();
+    echo '<p><label><strong>Готовое сообщение клиенту</strong> (для мессенджера или СМС; ссылка подставится сама):<br>'
+        . '<textarea id="dm-msg" rows="5" style="width:100%" readonly data-name="' . esc_attr($first) . '" data-num="' . esc_attr($order->get_order_number()) . '"></textarea></label><br>'
+        . '<button type="button" class="button" id="dm-copy-msg">Скопировать сообщение</button></p>';
     echo '<p><button type="submit" name="dm_do" value="recalc" class="button">Сохранить вес и пересчитать</button> ';
     echo '<button type="submit" name="dm_do" value="send" class="button button-primary">Пересчитать и отправить ссылку клиенту</button></p>';
     echo '<p class="description">После отправки статус станет «Ждёт оплаты». Когда деньги поступили, поставьте статус «Оплачен», а при отправке посылки — «Отправлен».</p>';
-    echo '<script>(function(){var rows=document.querySelectorAll(".dm-w");function f(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")+" ₽"}rows.forEach(function(i){i.addEventListener("input",function(){var w=parseFloat(i.value);if(!(w>0))return;var s=i.closest("tr").querySelector(".dm-sum");s.textContent=f(parseFloat(i.dataset.kg)*w/1000+parseFloat(i.dataset.tare))})})})();</script>';
+    echo '<script>(function(){
+var others=' . json_encode($others) . ';
+var rows=document.querySelectorAll(".dm-w");
+function f(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")+" ₽"}
+var tot=document.getElementById("dm-tot"),numEl=document.getElementById("dm-sum-num"),btn=document.getElementById("dm-copy-sum");
+var msg=document.getElementById("dm-msg"),url=document.querySelector("input[name=dm_pay_url]");
+function calc(){var t=others;rows.forEach(function(i){var w=parseFloat(i.value);var s=i.closest("tr").querySelector(".dm-sum");if(w>0){var v=parseFloat(i.dataset.kg)*w/1000+parseFloat(i.dataset.tare);s.textContent=f(v);t+=v}else{t+=parseFloat((s.textContent||"0").replace(/[^\d]/g,""))||0}});return Math.round(t)}
+function upd(){var t=calc();tot.textContent=f(t);numEl.textContent=t;btn.dataset.v=t;
+msg.value="Здравствуйте"+(msg.dataset.name?", "+msg.dataset.name:"")+"! Ваш заказ №"+msg.dataset.num+" в «Доме мёда» собран и взвешен. Точная сумма: "+f(t)+".\nОплатить можно по ссылке (карта МИР, Сбербанк или СБП): "+(url.value||"[вставьте ссылку выше]")+"\nСпасибо, что выбрали нас!"}
+function cp(text,b){var old=b.textContent;function ok(){b.textContent="Скопировано";setTimeout(function(){b.textContent=old},1500)}if(navigator.clipboard){navigator.clipboard.writeText(text).then(ok)}else{var a=document.createElement("textarea");a.value=text;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();ok()}}
+rows.forEach(function(i){i.addEventListener("input",upd)});url.addEventListener("input",upd);
+btn.addEventListener("click",function(){var v=btn.dataset.v;cp(v,btn);setTimeout(upd,1600)});
+document.getElementById("dm-copy-msg").addEventListener("click",function(){cp(msg.value,this)});
+upd();})();</script>';
 }
 
 /* ---------- Сохранение, пересчёт, отправка ---------- */
@@ -144,6 +165,7 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
             . '<p>Если кнопка не открывается, скопируйте ссылку: ' . esc_html($url) . '</p>'
             . '<p>Вопросы: +7 913 995-97-80, +7 913 698-09-63.</p>';
         $sent = $mailer->send($to, 'Заказ №' . $order->get_order_number() . ': точная сумма и ссылка на оплату', $mailer->wrap_message('Ваш заказ собран', $body));
+        $order->update_meta_data('_dm_sent_ts', time()); $order->delete_meta_data('_dm_remind_sent'); $order->save();
         $order->update_status('dm-await-pay', ($sent ? 'Письмо со ссылкой на оплату отправлено на ' . $to : 'ПИСЬМО НЕ УШЛО на ' . $to . ' (проверьте настройки почты)') . '. Сумма ' . dm_asm_money($order->get_total()) . '.');
     }
 }, 60);
@@ -162,7 +184,9 @@ function dm_asm_table($orders, $empty) {
     foreach ($orders as $o) {
         $names = array();
         foreach ($o->get_items('line_item') as $it) $names[] = $it->get_name() . ' (' . $it->get_meta('Фасовка') . ') × ' . $it->get_quantity();
-        echo '<tr><td>' . esc_html($o->get_order_number()) . '</td><td>' . esc_html(wc_format_datetime($o->get_date_created(), 'd.m H:i')) . '</td><td>' . esc_html($o->get_billing_first_name()) . '</td><td>' . esc_html($o->get_billing_phone()) . '</td><td>' . esc_html(implode('; ', $names)) . '</td><td>' . esc_html(dm_asm_money($o->get_total())) . '</td>';
+        $ts = (int) $o->get_meta('_dm_sent_ts');
+        $late = ($o->get_status() === 'dm-await-pay' && $ts && time() - $ts > DAY_IN_SECONDS);
+        echo '<tr' . ($late ? ' style="background:#fff0d6"' : '') . '><td>' . esc_html($o->get_order_number()) . ($late ? ' <span title="Ждёт оплаты больше суток">⏰</span>' : '') . '</td><td>' . esc_html(wc_format_datetime($o->get_date_created(), 'd.m H:i')) . '</td><td>' . esc_html($o->get_billing_first_name()) . '</td><td>' . esc_html($o->get_billing_phone()) . '</td><td>' . esc_html(implode('; ', $names)) . '</td><td>' . esc_html(dm_asm_money($o->get_total())) . '</td>';
         echo '<td><a class="button button-primary" href="' . esc_url($o->get_edit_order_url()) . '">Собрать</a></td></tr>';
     }
     echo '</tbody></table>';
@@ -176,3 +200,30 @@ function dm_asm_page() {
     dm_asm_table(wc_get_orders(array('status' => array('dm-await-pay'), 'limit' => 50, 'orderby' => 'date', 'order' => 'ASC')), 'Нет заказов, ожидающих оплаты.');
     echo '</div>';
 }
+
+
+/* ---------- Напоминание: заказ ждёт оплаты больше суток ---------- */
+
+add_action('init', function () {
+    if (!wp_next_scheduled('dm_asm_remind')) wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', 'dm_asm_remind');
+});
+
+add_action('dm_asm_remind', function () {
+    if (!function_exists('wc_get_orders')) return;
+    $late = array();
+    foreach (wc_get_orders(array('status' => array('dm-await-pay'), 'limit' => 50)) as $o) {
+        $ts = (int) $o->get_meta('_dm_sent_ts');
+        if (!$ts || time() - $ts < DAY_IN_SECONDS || $o->get_meta('_dm_remind_sent')) continue;
+        $late[] = $o;
+    }
+    if (!$late) return;
+    $to = get_option('woocommerce_new_order_settings');
+    $to = (is_array($to) && !empty($to['recipient'])) ? $to['recipient'] : get_option('admin_email');
+    $lines = array();
+    foreach ($late as $o) {
+        $lines[] = '№' . $o->get_order_number() . ' — ' . $o->get_billing_first_name() . ', ' . $o->get_billing_phone() . ', ' . dm_asm_money($o->get_total());
+        $o->update_meta_data('_dm_remind_sent', 1);
+        $o->save();
+    }
+    wp_mail($to, 'Заказы ждут оплаты больше суток', "Клиенты пока не оплатили:\n\n" . implode("\n", $lines) . "\n\nМожно позвонить или напомнить в мессенджере: раздел «Сборка заказов» в админке.");
+});
