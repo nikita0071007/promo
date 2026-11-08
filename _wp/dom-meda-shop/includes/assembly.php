@@ -97,6 +97,9 @@ function dm_asm_box($p) {
         . '<button type="button" class="button" id="dm-copy-msg">Скопировать сообщение</button></p>';
     echo '<p><button type="submit" name="dm_do" value="recalc" class="button">Сохранить вес и пересчитать</button> ';
     echo '<button type="submit" name="dm_do" value="send" class="button button-primary">Пересчитать и отправить ссылку клиенту</button></p>';
+    $rurl = $order->get_meta('_dm_receipt_url');
+    echo '<hr><p><label><strong>Чек об оплате</strong> (ссылка на чек из кассы или банка):<br><input type="url" name="dm_receipt_url" value="' . esc_attr($rurl) . '" style="width:100%" placeholder="https://..."></label></p>';
+    echo '<p><button type="submit" name="dm_do" value="receipt" class="button">Отправить клиенту чек</button> <span class="description">Письмо «Заказ оплачен» уходит само, когда вы ставите статус «Оплачен». Чек отправляйте этой кнопкой, когда получите ссылку.</span></p>';
     echo '<p class="description">После отправки статус станет «Ждёт оплаты». Когда деньги поступили, поставьте статус «Оплачен», а при отправке посылки — «Отправлен».</p>';
     echo '<script>(function(){
 var others=' . json_encode($others) . ';
@@ -125,6 +128,8 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
     $url = isset($_POST['dm_pay_url']) ? esc_url_raw(trim(wp_unslash($_POST['dm_pay_url']))) : '';
     $order->update_meta_data('_dm_pay_url', $url);
 
+    $rurl = isset($_POST['dm_receipt_url']) ? esc_url_raw(trim(wp_unslash($_POST['dm_receipt_url']))) : '';
+    $order->update_meta_data('_dm_receipt_url', $rurl);
     $do = isset($_POST['dm_do']) ? sanitize_key($_POST['dm_do']) : '';
     if ($do === 'recalc' || $do === 'send') {
         $ws = isset($_POST['dm_w']) && is_array($_POST['dm_w']) ? wp_unslash($_POST['dm_w']) : array();
@@ -145,6 +150,12 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
     }
     $order->save();
 
+    if ($do === 'receipt') {
+        if (stripos($rurl, 'https://') !== 0) { $order->add_order_note('Чек не отправлен: укажите ссылку на чек (https://...).'); return; }
+        $ok = dm_asm_mail_paid($order, true);
+        $order->add_order_note($ok ? 'Чек отправлен клиенту на ' . $order->get_billing_email() : 'ПИСЬМО С ЧЕКОМ НЕ УШЛО на ' . $order->get_billing_email());
+        return;
+    }
     if ($do === 'send') {
         if (!$url || stripos($url, 'https://') !== 0) {
             $order->add_order_note('Ссылка не отправлена: укажите ссылку на оплату (https://...).');
@@ -226,4 +237,42 @@ add_action('dm_asm_remind', function () {
         $o->save();
     }
     wp_mail($to, 'Заказы ждут оплаты больше суток', "Клиенты пока не оплатили:\n\n" . implode("\n", $lines) . "\n\nМожно позвонить или напомнить в мессенджере: раздел «Сборка заказов» в админке.");
+});
+
+
+/* ---------- Письмо «Заказ оплачен» (вместо стандартного) ---------- */
+
+add_filter('woocommerce_email_enabled_customer_processing_order', '__return_false');
+
+function dm_asm_mail_paid($order, $receipt_only = false) {
+    $to = $order->get_billing_email();
+    if (!$to) return false;
+    $mailer = WC()->mailer();
+    $rurl = $order->get_meta('_dm_receipt_url');
+    $rows = '';
+    foreach ($order->get_items('line_item') as $item) {
+        $rows .= '<li>' . esc_html($item->get_name()) . ' — ' . esc_html($item->get_meta('Фасовка')) . ' × ' . (int) $item->get_quantity() . ': ' . esc_html(dm_asm_money($item->get_total())) . '</li>';
+    }
+    $body = '<p>Здравствуйте, ' . esc_html($order->get_billing_first_name()) . '!</p>';
+    if ($receipt_only) {
+        $body .= '<p>Чек по вашему заказу №' . esc_html($order->get_order_number()) . ' на сумму <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>:</p>';
+    } else {
+        $body .= '<p>Мы получили оплату по заказу №' . esc_html($order->get_order_number()) . ' на сумму <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>. Спасибо! Заказ оплачен, передаём его в отправку.</p><ul>' . $rows . '</ul>';
+    }
+    if ($rurl) {
+        $body .= '<p><a href="' . esc_url($rurl) . '" style="display:inline-block;background:#e8a317;color:#222;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:bold">Открыть чек</a></p><p>Если кнопка не открывается, скопируйте ссылку: ' . esc_html($rurl) . '</p>';
+    } elseif (!$receipt_only) {
+        $body .= '<p>Чек об оплате пришлём отдельным письмом или он придёт от банка.</p>';
+    }
+    $body .= '<p>Вопросы: +7 913 995-97-80, +7 913 698-09-63.</p>';
+    return $mailer->send($to, ($receipt_only ? 'Чек по заказу №' : 'Заказ оплачен №') . $order->get_order_number(), $mailer->wrap_message($receipt_only ? 'Ваш чек' : 'Заказ оплачен', $body));
+}
+
+add_action('woocommerce_order_status_processing', function ($order_id) {
+    $order = wc_get_order($order_id);
+    if (!$order || $order->get_meta('_dm_paid_mail')) return;
+    $ok = dm_asm_mail_paid($order, false);
+    $order->update_meta_data('_dm_paid_mail', 1);
+    $order->add_order_note($ok ? 'Клиенту отправлено письмо «Заказ оплачен» на ' . $order->get_billing_email() : 'ПИСЬМО «ЗАКАЗ ОПЛАЧЕН» НЕ УШЛО на ' . $order->get_billing_email());
+    $order->save();
 });
