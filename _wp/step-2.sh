@@ -24,6 +24,9 @@ TID=$(W term list product_cat --slug=k-perga --field=term_id | head -1)
 [ -n "$TID" ] && W term update product_cat "$TID" --name="Пыльца и пчелопродукты" >/dev/null
 echo "2. Категория переименована"
 
+# Режим «магазин скоро откроется» выключаем: сайт и так закрыт паролем test
+W option update woocommerce_coming_soon no >/dev/null
+
 # 3. Сертификат: метки Traefik (один раз)
 if ! grep -q "dm_new.tls.certresolver" docker-compose.yml; then
   cp docker-compose.yml docker-compose.yml.bak
