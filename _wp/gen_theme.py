@@ -43,6 +43,8 @@ for f in DOCS.glob("*.pdf"):
     shutil.copy(f, OUT / "docs" / f.name)
 
 # ---------- шапка и подвал ----------
+BACK = """<?php if (!is_front_page()) : ?><div class="wrap backrow"><a class="back" href="<?php echo esc_url(home_url('/')); ?>" onclick="if(document.referrer&&document.referrer.indexOf(location.host)>-1&&history.length>1){history.back();return false}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Назад</a></div><?php endif; ?>
+"""
 head = html[html.index('<header class="top">'): html.index("</header>") + 9]
 head = conv(head)
 head = head.replace('href="<?php echo esc_url(dm_url(\'home\',\'\',\'\')); ?>" id="acc"', 'href="<?php echo esc_url(dm_account_url()); ?>"')
@@ -58,7 +60,7 @@ w("header.php", """<!doctype html>
 </head>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
-""" + head + "\n<main>\n")
+""" + head + "\n" + BACK + "<main>\n")
 
 foot = html[html.index("<footer>"): html.index("</footer>") + 9]
 foot = conv(foot).replace("Демо-макет, фото и тексты примерные.", "Тестовая версия сайта.")
