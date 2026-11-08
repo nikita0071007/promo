@@ -300,6 +300,18 @@ form.cart{margin:0}form.cart .quantity{display:inline-block;margin-right:10px}
 .woocommerce-account .u-columns{display:grid;grid-template-columns:1fr 1fr;gap:24px}.woocommerce form.login,.woocommerce form.register{border:1px solid var(--line);border-radius:18px;padding:22px;background:var(--paper)}
 .dm-content{max-width:900px;margin:0 auto}.dm-content.wide,.woocommerce-cart .dm-content,.woocommerce-checkout .dm-content,.woocommerce-account .dm-content{max-width:none}
 .dm-post{margin:0 0 24px}.dm-bc{font-size:14px;color:var(--muted);margin:0 0 14px}
+
+/* классы WC cart совпали с макетом: сбрасываем */
+.woocommerce form.cart{display:block;background:none;border:0;padding:0;border-radius:0;gap:0;grid-template-columns:none}
+.woocommerce table.cart{display:table;background:none;border:0;padding:0;border-radius:0;gap:0;grid-template-columns:none}
+.woocommerce table.cart .actions .coupon{display:flex;gap:10px;float:left}
+/* звёзды рейтинга без шрифта WC */
+.star-rating{position:relative;display:inline-block;height:1.3em;width:5.9em;overflow:hidden;line-height:1.3;letter-spacing:.1em;vertical-align:middle}
+.star-rating::before{content:"★★★★★";color:#d9cfc0;position:absolute;left:0;top:0}
+.star-rating span{position:absolute;left:0;top:0;overflow:hidden;padding-top:2em;height:0}
+.star-rating span::before{content:"★★★★★";color:#E8A21F;position:absolute;left:0;top:0}
+.woocommerce-product-rating{display:flex;gap:10px;align-items:center;margin:0 0 6px;color:var(--muted);font-size:14.5px}
+p.stars a{color:#E8A21F}
 .screen-reader-text{position:absolute;left:-9999px}
 @media (max-width:900px){.woocommerce ul.products{grid-template-columns:1fr 1fr}.woocommerce div.product,.woocommerce form.checkout,.woocommerce-account .woocommerce,.woocommerce-account .u-columns{grid-template-columns:1fr}.woocommerce form.checkout #customer_details,.woocommerce form.checkout #order_review_heading,.woocommerce form.checkout #order_review{grid-column:1;grid-row:auto}.woocommerce form.checkout{padding:22px 18px}.woocommerce table.shop_table_responsive tr td::before{font-weight:600}}
 @media (max-width:520px){.woocommerce ul.products{grid-template-columns:1fr}}
