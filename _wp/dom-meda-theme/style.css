@@ -163,3 +163,9 @@ body.inner header.top,body.inner.admin-bar header.top{position:relative;top:0!im
 .back svg{width:16px;height:16px;stroke-width:2.2;transition:transform .2s}.back:hover svg{transform:translateX(-2px)}
 .back:focus-visible{outline:2px solid #e8a317;outline-offset:2px}
 .inner1{padding-top:18px}
+
+.soc a{border:0;color:#fff;transition:transform .2s,filter .2s,box-shadow .2s;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.soc a:nth-child(1){background:#0077FF}.soc a:nth-child(2){background:#2AABEE}.soc a:nth-child(3){background:#6c4cf0}.soc a.wa{background:#25D366}
+.soc a:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.soc a.wa svg{fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.soc a:focus-visible{outline:2px solid #F6EBCB;outline-offset:3px}
