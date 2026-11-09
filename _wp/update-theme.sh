@@ -25,5 +25,8 @@ MID=$(W post list --post_type=page --post_status=publish --s='woocommerce_my_acc
 if [ -z "$MID" ]; then MID=$(W post create --post_type=page --post_status=publish --post_title="Мой аккаунт" --post_name=my-account --post_content='[woocommerce_my_account]' --porcelain); fi
 W option update woocommerce_myaccount_page_id "$MID" >/dev/null
 echo "Личный кабинет: страница $MID"
+OID=$(W post list --post_type=page --post_status=publish --name=o-nas --field=ID | head -1)
+if [ -z "$OID" ]; then OID=$(W post create --post_type=page --post_status=publish --post_title="О нас" --post_name=o-nas --porcelain); fi
+echo "Страница О нас: $OID"
 W rewrite flush >/dev/null 2>&1 || true
 echo UPDATE_DONE

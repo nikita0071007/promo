@@ -19,7 +19,7 @@
 <section id="how" style="padding-top:0"><div class="wrap"><div class="sh"><h2>Как заказать</h2></div><ol class="how"><li><b>Выберите товар</b><span>Добавьте мёд и травы в корзину</span></li><li><b>Мы взвесим и пришлём сумму</b><span>Для мёда на развес точная цена после взвешивания</span></li><li><b>Оплатите по ссылке</b><span>Картой МИР, Сбербанк или через СБП, прямо на счёт ИП</span></li><li><b>Получите заказ</b><span>Ozon, СДЭК, Пятёрочка или самовывоз</span></li></ol></div></section>
 <section id="api" style="padding-top:20px"><div class="wrap api">
 <div class="tx"><h2>Наша пасека</h2><p>Мы заботимся о пчёлах и природе Алтая, чтобы вы получали только натуральный и качественный мёд.</p>
-<ul><li>Собственная пасека в Горном Алтае</li><li>Современные стандарты качества</li><li>Подтверждённая сертификация</li></ul><a class="btn dk" href="<?php echo esc_url(dm_url('documents','','')); ?>">Документы на продукцию</a></div>
+<ul><li>Собственная пасека в Горном Алтае</li><li>Современные стандарты качества</li><li>Подтверждённая сертификация</li></ul><div class="two" style="justify-content:flex-start"><a class="btn" href="<?php echo esc_url(dm_url('about','','')); ?>">Подробнее о нас</a><a class="btn dk" href="<?php echo esc_url(dm_url('documents','','')); ?>">Документы на продукцию</a></div></div>
 <div class="apiph"><img src="<?php echo esc_url(dm_img('api2')); ?>" alt="Хозяин пасеки с внуком у улья"></div>
 </div></section>
 <section id="contact" style="padding-top:30px"><div class="wrap"><div class="cu">

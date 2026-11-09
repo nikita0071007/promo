@@ -47,7 +47,7 @@ function dm_cat_url($slug) {
 
 function dm_url($go, $cf = '', $sc = '') {
     $map = array('home' => '/', 'documents' => '/dokumenty/', 'reviews' => '/otzyvy/', 'payment' => '/oplata/',
-                 'delivery' => '/dostavka/', 'contacts' => '/kontakty/', 'privacy' => '/politika/', 'offer' => '/oferta/');
+                 'delivery' => '/dostavka/', 'about' => '/o-nas/', 'contacts' => '/kontakty/', 'privacy' => '/politika/', 'offer' => '/oferta/');
     $cats = array('med' => 'k-med', 'tea' => 'k-tea', 'perga' => 'k-perga', 'gift' => 'k-gift');
     if ($go === 'catalog') return $cf && isset($cats[$cf]) ? dm_cat_url($cats[$cf]) : dm_shop_url();
     if ($go === 'cart') return wc_get_cart_url();
@@ -85,3 +85,32 @@ remove_action('woocommerce_single_product_summary', 'woocommerce_template_single
 add_action('woocommerce_after_cart', function () { get_template_part('price-note'); });
 
 // Админ-панель сверху на тестовой версии не нужна покупателям, но владельцу удобна: оставляем
+
+
+/* ---------- Поиск по каталогу ---------- */
+
+function dm_search_form($cls = 'dm-search') {
+    $q = get_search_query();
+    return '<form role="search" method="get" class="' . esc_attr($cls) . '" action="' . esc_url(dm_shop_url()) . '">'
+        . '<input type="search" name="s" value="' . esc_attr($q) . '" placeholder="Найти товар: мёд, чай, корень…" aria-label="Поиск по каталогу">'
+        . '<input type="hidden" name="post_type" value="product">'
+        . '<button type="submit">Найти</button></form>';
+}
+
+// Ищем без различия «е» и «ё» и по основе слова (мед = мёд, травы = травяной)
+add_filter('posts_search', function ($search, $q) {
+    global $wpdb;
+    if (is_admin() || !$q->is_main_query() || !$q->is_search() || $q->get('post_type') !== 'product') return $search;
+    $raw = trim((string) $q->get('s'));
+    if ($raw === '') return $search;
+    $words = preg_split('/\s+/u', mb_strtolower($raw), -1, PREG_SPLIT_NO_EMPTY);
+    $parts = array();
+    foreach ($words as $w) {
+        $w = str_replace('ё', 'е', $w);
+        $n = mb_strlen($w);
+        if ($n > 5) $w = mb_substr($w, 0, $n - 2); elseif ($n > 3) $w = mb_substr($w, 0, $n - 1);
+        $like = '%' . $wpdb->esc_like($w) . '%';
+        $parts[] = $wpdb->prepare("(REPLACE(LOWER({$wpdb->posts}.post_title),'ё','е') LIKE %s OR REPLACE(LOWER({$wpdb->posts}.post_excerpt),'ё','е') LIKE %s OR REPLACE(LOWER({$wpdb->posts}.post_content),'ё','е') LIKE %s)", $like, $like, $like);
+    }
+    return $parts ? ' AND (' . implode(' AND ', $parts) . ') ' : $search;
+}, 20, 2);

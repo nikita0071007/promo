@@ -3,7 +3,8 @@
 <?php if (is_singular('product')) : ?>
 <a class="back" href="<?php echo esc_url(dm_shop_url()); ?>">← Назад в каталог</a>
 <?php else : ?>
-<div class="sh"><h2><?php echo is_product_category() ? esc_html(single_term_title('', false)) : 'Каталог'; ?></h2></div>
+<div class="sh"><h2><?php echo is_search() ? 'Поиск: «' . esc_html(get_search_query()) . '»' : (is_product_category() ? esc_html(single_term_title('', false)) : 'Каталог'); ?></h2></div>
+<?php echo dm_search_form(); ?>
 <?php dm_chips(); ?>
 <?php endif; ?>
 <?php woocommerce_content(); ?>

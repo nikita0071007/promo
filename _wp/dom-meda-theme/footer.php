@@ -8,6 +8,8 @@
 <script>
 (function(){var b=document.querySelector(".burger"),m=document.getElementById("menu"),u=document.getElementById("up");
 if(b&&m)b.addEventListener("click",function(){var o=m.classList.toggle("open");b.setAttribute("aria-expanded",o?"true":"false")});
+var sb=document.getElementById("sbtn"),hs=document.getElementById("hs");
+if(sb&&hs)sb.addEventListener("click",function(e){e.preventDefault();hs.hidden=!hs.hidden;if(!hs.hidden){var i=hs.querySelector("input[type=search]");if(i)i.focus()}});
 if(u){window.addEventListener("scroll",function(){u.classList.toggle("on",window.scrollY>600)});u.addEventListener("click",function(e){e.preventDefault();window.scrollTo({top:0,behavior:"smooth"})})}})();
 </script>
 <?php wp_footer(); ?>
