@@ -115,3 +115,17 @@ add_filter('posts_search', function ($search, $q) {
     }
     return $parts ? ' AND (' . implode(' AND ', $parts) . ') ' : $search;
 }, 20, 2);
+
+/* Значок вкладки (фавикон): домик «Дом мёда». Если в настройках сайта задан свой значок, он главнее. */
+function dm_favicon_links() {
+    if (function_exists('has_site_icon') && has_site_icon()) return;
+    $d = get_template_directory();
+    $u = get_template_directory_uri() . '/img/';
+    $v = function ($f) use ($d) { $p = $d . '/img/' . $f; return file_exists($p) ? '?v=' . filemtime($p) : ''; };
+    echo '<link rel="icon" type="image/png" sizes="32x32" href="' . esc_url($u . 'favicon-32.png' . $v('favicon-32.png')) . '">' . "\n";
+    echo '<link rel="icon" type="image/png" sizes="192x192" href="' . esc_url($u . 'favicon-192.png' . $v('favicon-192.png')) . '">' . "\n";
+    echo '<link rel="apple-touch-icon" href="' . esc_url($u . 'apple-touch-icon.png' . $v('apple-touch-icon.png')) . '">' . "\n";
+}
+add_action('wp_head', 'dm_favicon_links', 2);
+add_action('admin_head', 'dm_favicon_links', 2);
+add_action('login_head', 'dm_favicon_links', 2);

@@ -20,6 +20,9 @@ add_action('template_redirect', function () {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Дом мёда — скоро открытие</title>
+<link rel="icon" type="image/png" sizes="32x32" href="<?php echo $img; ?>favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="<?php echo $img; ?>favicon-192.png">
+<link rel="apple-touch-icon" href="<?php echo $img; ?>apple-touch-icon.png">
 <style>
 :root{--paper:#FFFAF0;--forest:#203B2B;--muted:#6B766A;--gold:#F3B93E;--line:#E7DCC7}
 *{box-sizing:border-box}
