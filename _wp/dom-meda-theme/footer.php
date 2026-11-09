@@ -9,7 +9,11 @@
 (function(){var b=document.querySelector(".burger"),m=document.getElementById("menu"),u=document.getElementById("up");
 if(b&&m)b.addEventListener("click",function(){var o=m.classList.toggle("open");b.setAttribute("aria-expanded",o?"true":"false")});
 var sb=document.getElementById("sbtn"),hs=document.getElementById("hs");
-if(sb&&hs)sb.addEventListener("click",function(e){e.preventDefault();hs.hidden=!hs.hidden;if(!hs.hidden){var i=hs.querySelector("input[type=search]");if(i)i.focus()}});
+if(sb&&hs)sb.addEventListener("click",function(e){e.preventDefault();hs.hidden=!hs.hidden;if(typeof cl==="function")cl();if(!hs.hidden){var i=hs.querySelector("input[type=search]");if(i)i.focus()}});
+var pb=document.getElementById("pbtn"),pm=document.getElementById("pm");
+function cl(){if(pm&&!pm.hidden){pm.hidden=true;pb.setAttribute("aria-expanded","false")}}
+if(pb&&pm){pb.addEventListener("click",function(e){e.stopPropagation();var o=pm.hidden;if(hs)hs.hidden=true;pm.hidden=!o;pb.setAttribute("aria-expanded",o?"true":"false")});
+document.addEventListener("click",function(e){if(!pm.contains(e.target)&&e.target!==pb)cl()});document.addEventListener("keydown",function(e){if(e.key==="Escape")cl()})}
 if(u){window.addEventListener("scroll",function(){u.classList.toggle("on",window.scrollY>600)});u.addEventListener("click",function(e){e.preventDefault();window.scrollTo({top:0,behavior:"smooth"})})}})();
 </script>
 <?php wp_footer(); ?>
