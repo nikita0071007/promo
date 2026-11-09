@@ -230,6 +230,19 @@ function dm_consent_list() {
             'revoked' => (bool) get_option('dm_revoked_' . md5($mail)),
         );
     }
+    foreach (get_users(array('meta_key' => 'dm_marketing', 'meta_value' => '1', 'fields' => 'all')) as $u) {
+        $mail = strtolower(trim($u->user_email));
+        if (!$mail || isset($out[$mail])) continue;
+        $ts = (int) get_user_meta($u->ID, 'dm_marketing_ts', true);
+        $out[$mail] = array(
+            'date' => $ts ? wp_date('d.m.Y H:i', $ts) : '',
+            'name' => get_user_meta($u->ID, 'billing_first_name', true) ?: $u->display_name,
+            'email' => $mail,
+            'phone' => get_user_meta($u->ID, 'billing_phone', true),
+            'order' => '—',
+            'revoked' => (bool) get_option('dm_revoked_' . md5($mail)),
+        );
+    }
     return $out;
 }
 
@@ -246,7 +259,7 @@ function dm_consents_page() {
     if (!$list) { echo '<p>Пока никто не дал согласие.</p></div>'; return; }
     echo '<table class="widefat striped"><thead><tr><th>Дата согласия</th><th>Имя</th><th>Почта</th><th>Телефон</th><th>Заказ</th><th>Статус</th><th></th></tr></thead><tbody>';
     foreach ($list as $c) {
-        echo '<tr><td>' . esc_html($c['date']) . '</td><td>' . esc_html($c['name']) . '</td><td>' . esc_html($c['email']) . '</td><td>' . esc_html($c['phone']) . '</td><td>№' . esc_html($c['order']) . '</td><td>' . ($c['revoked'] ? '<strong style="color:#b32d2e">отозвал</strong>' : 'согласен') . '</td><td>';
+        echo '<tr><td>' . esc_html($c['date']) . '</td><td>' . esc_html($c['name']) . '</td><td>' . esc_html($c['email']) . '</td><td>' . esc_html($c['phone']) . '</td><td>' . ($c['order'] === '—' ? '—' : '№' . esc_html($c['order'])) . '</td><td>' . ($c['revoked'] ? '<strong style="color:#b32d2e">отозвал</strong>' : 'согласен') . '</td><td>';
         echo '<form method="post" style="margin:0">';
         wp_nonce_field('dm_rev', 'dm_rev_nonce');
         echo '<input type="hidden" name="mail" value="' . esc_attr($c['email']) . '">';
@@ -284,3 +297,68 @@ function dm_settings_page() {
 function dm_may_send_marketing($email) {
     return !get_option('dm_revoked_' . md5(strtolower(trim($email))));
 }
+
+
+/* ---------- Согласие на рассылку: личный кабинет и ссылка «Отписаться» ---------- */
+
+function dm_has_marketing($user_id) {
+    $u = get_userdata($user_id);
+    if (!$u) return false;
+    $mail = strtolower(trim($u->user_email));
+    if (get_option('dm_revoked_' . md5($mail))) return false;
+    if (get_user_meta($user_id, 'dm_marketing', true) === '1') return true;
+    return isset(dm_consent_list()[$mail]);
+}
+
+// Галочка в «Мои данные»
+add_action('woocommerce_edit_account_form', function () {
+    $on = dm_has_marketing(get_current_user_id());
+    echo '<p class="woocommerce-form-row form-row dm-opt"><label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" name="dm_marketing_acc" value="1"' . checked($on, true, false) . ' style="margin-top:4px"><span>Хочу получать информацию об акциях и новинках на почту. Отказаться можно в любой момент здесь или по ссылке «Отписаться» в письме.</span></label></p>';
+}, 20);
+
+add_action('woocommerce_save_account_details', function ($uid) {
+    $u = get_userdata($uid);
+    if (!$u) return;
+    $mail = strtolower(trim($u->user_email));
+    if (!empty($_POST['dm_marketing_acc'])) {
+        delete_option('dm_revoked_' . md5($mail));
+        if (get_user_meta($uid, 'dm_marketing', true) !== '1') update_user_meta($uid, 'dm_marketing_ts', time());
+        update_user_meta($uid, 'dm_marketing', '1');
+    } else {
+        update_user_meta($uid, 'dm_marketing', '0');
+        update_option('dm_revoked_' . md5($mail), time(), false);
+    }
+});
+
+// Необязательная галочка при регистрации
+add_action('woocommerce_register_form', function () {
+    echo '<p class="woocommerce-form-row form-row"><label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" name="dm_marketing_reg" value="1" style="margin-top:4px"><span>Хочу получать информацию об акциях и новинках (необязательно). Согласие можно отозвать в любой момент.</span></label></p>';
+});
+
+add_action('woocommerce_created_customer', function ($uid) {
+    if (empty($_POST['dm_marketing_reg'])) return;
+    update_user_meta($uid, 'dm_marketing', '1');
+    update_user_meta($uid, 'dm_marketing_ts', time());
+    $u = get_userdata($uid);
+    if ($u) delete_option('dm_revoked_' . md5(strtolower(trim($u->user_email))));
+}, 20);
+
+// Ссылка «Отписаться» для рекламных писем: dm_unsub_url($email)
+function dm_unsub_url($email) {
+    $email = strtolower(trim($email));
+    $sig = hash_hmac('sha256', $email, wp_salt('auth'));
+    return add_query_arg(array('dm_unsub' => rawurlencode($email), 'sig' => $sig), home_url('/'));
+}
+
+add_action('template_redirect', function () {
+    if (empty($_GET['dm_unsub']) || empty($_GET['sig'])) return;
+    $email = strtolower(trim(rawurldecode(sanitize_text_field(wp_unslash($_GET['dm_unsub'])))));
+    $ok = $email && hash_equals(hash_hmac('sha256', $email, wp_salt('auth')), sanitize_text_field(wp_unslash($_GET['sig'])));
+    if ($ok) {
+        update_option('dm_revoked_' . md5($email), time(), false);
+        $msg = '<h2>Вы отписались от рассылки</h2><p>Рекламные сообщения на ' . esc_html($email) . ' больше приходить не будут. Письма о ваших заказах (статус, оплата, чек, отправка) продолжат приходить.</p><p>Если передумаете, согласие можно вернуть в личном кабинете, в разделе «Мои данные».</p>';
+    } else {
+        $msg = '<h2>Ссылка не подошла</h2><p>Напишите нам на vm-surtaev@yandex.ru, и мы отпишем вас вручную.</p>';
+    }
+    wp_die($msg, 'Рассылка', array('response' => 200, 'back_link' => true));
+});
