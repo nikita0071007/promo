@@ -36,7 +36,8 @@ function dm_account_url() {
 }
 
 function dm_img($k) {
-    return get_theme_file_uri('img/' . $k . '.jpg');
+    $p = get_theme_file_path('img/' . $k . '.jpg');
+    return get_theme_file_uri('img/' . $k . '.jpg') . (file_exists($p) ? '?v=' . filemtime($p) : '');
 }
 
 function dm_cat_url($slug) {
