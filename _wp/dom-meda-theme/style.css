@@ -155,4 +155,11 @@ body.inner header.top{position:static;background:var(--bg);border-bottom:1px sol
 .pi{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 14px Onest,sans-serif;font-style:normal;flex:none}
 .pi svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:520px){.pm{left:0;width:auto}}
-body.inner header.top{position:relative;z-index:30}
+body.inner header.top,body.inner.admin-bar header.top{position:relative;top:0!important;z-index:30}
+
+.backrow{padding:18px 0 0;margin-bottom:-6px}
+.back{padding:7px 16px 7px 10px;border:1px solid #e3d9bf;background:transparent;color:#1e3326;font-size:14.5px;font-weight:500;box-shadow:none}
+.back:hover{background:#fff8e4;border-color:#d8c48a}
+.back svg{width:16px;height:16px;stroke-width:2.2;transition:transform .2s}.back:hover svg{transform:translateX(-2px)}
+.back:focus-visible{outline:2px solid #e8a317;outline-offset:2px}
+.inner1{padding-top:18px}
