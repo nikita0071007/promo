@@ -170,3 +170,5 @@ body.inner header.top,body.inner.admin-bar header.top{position:relative;top:0!im
 .soc a.wa svg{fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .soc a:focus-visible{outline:2px solid #F6EBCB;outline-offset:3px}
 @media (max-width:520px){.logo small{display:none!important}.logo{font-size:20px!important;gap:8px!important}.hex{height:38px!important}.nav{gap:6px!important}.ic{gap:0!important}.ic a,.ic button{width:36px!important;height:36px!important}.ic svg{width:22px!important;height:22px!important}.ic .cartb b{top:0!important;right:-2px!important}}
+
+body.single-product header.top+.wrap.backrow{display:none}
