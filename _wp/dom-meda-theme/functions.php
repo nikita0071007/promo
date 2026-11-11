@@ -105,15 +105,31 @@ add_filter('posts_search', function ($search, $q) {
     $raw = trim((string) $q->get('s'));
     if ($raw === '') return $search;
     $words = preg_split('/\s+/u', mb_strtolower($raw), -1, PREG_SPLIT_NO_EMPTY);
-    $parts = array();
+    // нормализация: ё=е, й=и (чай/чаи), чтобы находились и «чай», и раздел «Чаи»
+    $norm = function ($col) { return "REPLACE(REPLACE(LOWER($col),'ё','е'),'й','и')"; };
+    $strict = array();
+    $loose  = array();
     foreach ($words as $w) {
-        $w = str_replace('ё', 'е', $w);
+        $w = str_replace(array('ё', 'й'), array('е', 'и'), $w);
         $n = mb_strlen($w);
         if ($n > 5) $w = mb_substr($w, 0, $n - 2); elseif ($n > 3) $w = mb_substr($w, 0, $n - 1);
         $like = '%' . $wpdb->esc_like($w) . '%';
-        $parts[] = $wpdb->prepare("(REPLACE(LOWER({$wpdb->posts}.post_title),'ё','е') LIKE %s OR REPLACE(LOWER({$wpdb->posts}.post_excerpt),'ё','е') LIKE %s OR REPLACE(LOWER({$wpdb->posts}.post_content),'ё','е') LIKE %s)", $like, $like, $like);
+        $in_title = $wpdb->prepare($norm("{$wpdb->posts}.post_title") . ' LIKE %s', $like);
+        $in_terms = $wpdb->prepare(
+            "EXISTS (SELECT 1 FROM {$wpdb->term_relationships} tr
+                JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy IN ('product_cat','product_tag')
+                JOIN {$wpdb->terms} t ON t.term_id = tt.term_id
+                WHERE tr.object_id = {$wpdb->posts}.ID AND " . $norm('t.name') . " LIKE %s)", $like);
+        $in_text = $wpdb->prepare($norm("{$wpdb->posts}.post_excerpt") . ' LIKE %s OR ' . $norm("{$wpdb->posts}.post_content") . ' LIKE %s', $like, $like);
+        $strict[] = "($in_title OR $in_terms)";
+        $loose[]  = "($in_title OR $in_terms OR $in_text)";
     }
-    return $parts ? ' AND (' . implode(' AND ', $parts) . ') ' : $search;
+    if (!$strict) return $search;
+    $strict_sql = ' AND (' . implode(' AND ', $strict) . ') ';
+    // Сначала строго (название и раздел). Если пусто, ищем и по описанию.
+    $cnt = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type='product' AND post_status='publish' $strict_sql");
+    if ($cnt > 0) return $strict_sql;
+    return ' AND (' . implode(' AND ', $loose) . ') ';
 }, 20, 2);
 
 /* Значок вкладки (фавикон): домик «Дом мёда». Если в настройках сайта задан свой значок, он главнее. */
