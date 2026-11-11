@@ -172,3 +172,10 @@ body.inner header.top,body.inner.admin-bar header.top{position:relative;top:0!im
 @media (max-width:520px){.logo small{display:none!important}.logo{font-size:20px!important;gap:8px!important}.hex{height:38px!important}.nav{gap:6px!important}.ic{gap:0!important}.ic a,.ic button{width:36px!important;height:36px!important}.ic svg{width:22px!important;height:22px!important}.ic .cartb b{top:0!important;right:-2px!important}}
 
 body.single-product header.top+.wrap.backrow{display:none}
+
+@font-face{font-family:"DM Script";src:url(fonts/lobster-cyr.woff2) format("woff2");font-display:swap}
+@font-face{font-family:"DM Black";src:url(fonts/robotoserif-black-cyr.woff2) format("woff2");font-weight:900;font-display:swap}
+.hero h1.h1logo{display:flex;flex-wrap:wrap;align-items:baseline;gap:.02em .22em;line-height:1}
+.hero h1.h1logo .l1{font-family:"DM Script","Playfair Display",serif;font-weight:400;font-size:.92em}
+.hero h1.h1logo .l2{font-family:"DM Black","Playfair Display",serif;font-weight:900;text-transform:uppercase;letter-spacing:.01em;font-size:.9em}
+.hero .sub{font-family:Onest,sans-serif;font-weight:600}
