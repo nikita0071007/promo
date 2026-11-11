@@ -27,7 +27,7 @@ add_action('woocommerce_account_dashboard', function () {
     $u = wp_get_current_user();
     $name = trim(get_user_meta($u->ID, 'billing_first_name', true));
     if (!$name) $name = $u->display_name;
-    echo '<div class="dm-acc-hello"><h3>Здравствуйте, ' . esc_html($name) . '!</h3><p>Здесь вы видите свои заказы и ссылки на оплату. Чек и ссылка также приходят на почту <strong>' . esc_html($u->user_email) . '</strong>.</p></div>';
+    echo '<div class="dm-acc-hello"><h3>Здравствуйте, ' . esc_html($name) . '!</h3><p>Здесь Вы видите свои заказы и ссылки на оплату. Чек и ссылка также приходят на почту <strong>' . esc_html($u->user_email) . '</strong>.</p></div>';
     $orders = wc_get_orders(array('customer' => $u->ID, 'limit' => 1, 'orderby' => 'date', 'order' => 'DESC'));
     if ($orders) {
         $o = $orders[0];
@@ -84,7 +84,7 @@ add_action('woocommerce_login_form_end', function () {
 add_action('woocommerce_register_form_start', function () {
     $n = isset($_POST['dm_reg_name']) ? esc_attr(wp_unslash($_POST['dm_reg_name'])) : '';
     $p = isset($_POST['dm_reg_phone']) ? esc_attr(wp_unslash($_POST['dm_reg_phone'])) : '';
-    echo '<p class="woocommerce-form-row form-row"><label for="dm_reg_name">Как к вам обращаться (ФИО) <span class="required">*</span></label><input type="text" class="input-text" name="dm_reg_name" id="dm_reg_name" autocomplete="name" value="' . $n . '" required></p>';
+    echo '<p class="woocommerce-form-row form-row"><label for="dm_reg_name">Как к Вам обращаться (ФИО) <span class="required">*</span></label><input type="text" class="input-text" name="dm_reg_name" id="dm_reg_name" autocomplete="name" value="' . $n . '" required></p>';
     echo '<p class="woocommerce-form-row form-row"><label for="dm_reg_phone">Телефон <span class="required">*</span></label><input type="tel" class="input-text" name="dm_reg_phone" id="dm_reg_phone" autocomplete="tel" placeholder="+7 ___ ___-__-__" value="' . $p . '" required></p>';
 });
 
@@ -92,7 +92,7 @@ add_filter('woocommerce_registration_errors', function ($errors, $username, $ema
     $n = isset($_POST['dm_reg_name']) ? trim(wp_unslash($_POST['dm_reg_name'])) : '';
     $p = isset($_POST['dm_reg_phone']) ? preg_replace('/\D+/', '', wp_unslash($_POST['dm_reg_phone'])) : '';
     if ($n === '') $errors->add('dm_name', 'Укажите имя.');
-    if (strlen($p) < 10) $errors->add('dm_phone', 'Укажите телефон, чтобы мы могли с вами связаться.');
+    if (strlen($p) < 10) $errors->add('dm_phone', 'Укажите телефон, чтобы мы могли с Вами связаться.');
     return $errors;
 }, 10, 3);
 

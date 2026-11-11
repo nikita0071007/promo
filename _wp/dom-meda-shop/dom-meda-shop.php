@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Дом мёда — магазин
  * Description: Цена по фасовке (вес + тара), оформление заказа без облачных касс и оплата по ссылке напрямую на счёт ИП.
- * Version: 0.4.2
+ * Version: 0.4.3
  * Author: GusevMade
  */
 if (!defined('ABSPATH')) exit;
@@ -222,7 +222,7 @@ add_filter('woocommerce_ship_to_different_address_checked', '__return_false');
 add_filter('woocommerce_enable_order_notes_field', '__return_true');
 
 add_filter('woocommerce_thankyou_order_received_text', function ($t) {
-    return 'Спасибо! Заказ принят. Ссылку на оплату мы отправим на вашу почту и в мессенджер. Оплатить можно картой МИР, Сбербанк или через СБП. После оплаты придёт чек.';
+    return 'Спасибо! Заказ принят. Ссылку на оплату мы отправим на Вашу почту и в мессенджер. Оплатить можно картой МИР, Сбербанк или через СБП. После оплаты придёт чек.';
 });
 
 /* ---------- Способ оплаты: ссылка на оплату ---------- */

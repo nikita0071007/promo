@@ -99,7 +99,7 @@ function dm_asm_box($p) {
     echo '<button type="submit" name="dm_do" value="send" class="button button-primary">Пересчитать и отправить ссылку клиенту</button></p>';
     $rurl = $order->get_meta('_dm_receipt_url');
     echo '<hr><p><label><strong>Чек об оплате</strong> (ссылка на чек из кассы или банка):<br><input type="url" name="dm_receipt_url" value="' . esc_attr($rurl) . '" style="width:100%" placeholder="https://..."></label></p>';
-    echo '<p><button type="submit" name="dm_do" value="receipt" class="button">Отправить клиенту чек</button> <span class="description">Письмо «Заказ оплачен» уходит само, когда вы ставите статус «Оплачен». Чек отправляйте этой кнопкой, когда получите ссылку.</span></p>';
+    echo '<p><button type="submit" name="dm_do" value="receipt" class="button">Отправить клиенту чек</button> <span class="description">Письмо «Заказ оплачен» уходит само, когда Вы ставите статус «Оплачен». Чек отправляйте этой кнопкой, когда получите ссылку.</span></p>';
     echo '<p class="description">После отправки статус станет «Ждёт оплаты». Когда деньги поступили, поставьте статус «Оплачен», а при отправке посылки — «Отправлен».</p>';
     echo '<script>(function(){
 var others=' . json_encode($others) . ';
@@ -255,7 +255,7 @@ function dm_asm_mail_paid($order, $receipt_only = false) {
     }
     $body = '<p>Здравствуйте, ' . esc_html($order->get_billing_first_name()) . '!</p>';
     if ($receipt_only) {
-        $body .= '<p>Чек по вашему заказу №' . esc_html($order->get_order_number()) . ' на сумму <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>:</p>';
+        $body .= '<p>Чек по Вашему заказу №' . esc_html($order->get_order_number()) . ' на сумму <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>:</p>';
     } else {
         $body .= '<p>Мы получили оплату по заказу №' . esc_html($order->get_order_number()) . ' на сумму <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>. Спасибо! Заказ оплачен, передаём его в отправку.</p><ul>' . $rows . '</ul>';
     }

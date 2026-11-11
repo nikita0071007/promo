@@ -136,11 +136,11 @@ add_action('dm_review_ask', function () {
         if (!$to) continue;
         $mailer = WC()->mailer();
         $body = '<p>Здравствуйте, ' . esc_html($o->get_billing_first_name()) . '!</p>'
-            . '<p>Надеемся, заказ №' . esc_html($o->get_order_number()) . ' дошёл в порядке и вам понравился мёд.</p>'
-            . '<p>Нам очень важно ваше мнение. Если не сложно, напишите пару слов:</p>'
+            . '<p>Надеемся, заказ №' . esc_html($o->get_order_number()) . ' дошёл в порядке и Вам понравился мёд.</p>'
+            . '<p>Нам очень важно Ваше мнение. Если не сложно, напишите пару слов:</p>'
             . '<p><a href="' . esc_url(dm_review_url()) . '" style="display:inline-block;background:#e8a317;color:#222;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:bold">Оставить отзыв</a></p>'
             . '<p>Спасибо, что выбрали «Дом мёда»!</p>';
-        $ok = $mailer->send($to, 'Как вам заказ №' . $o->get_order_number() . '?', $mailer->wrap_message('Расскажите, как вам', $body));
+        $ok = $mailer->send($to, 'Как Вам заказ №' . $o->get_order_number() . '?', $mailer->wrap_message('Расскажите, как Вам', $body));
         $o->update_meta_data('_dm_review_sent', $ok ? time() : 'fail');
         $o->add_order_note($ok ? 'Клиенту отправлена просьба об отзыве.' : 'Просьба об отзыве не ушла.');
         $o->save();
@@ -356,9 +356,9 @@ add_action('template_redirect', function () {
     $ok = $email && hash_equals(hash_hmac('sha256', $email, wp_salt('auth')), sanitize_text_field(wp_unslash($_GET['sig'])));
     if ($ok) {
         update_option('dm_revoked_' . md5($email), time(), false);
-        $msg = '<h2>Вы отписались от рассылки</h2><p>Рекламные сообщения на ' . esc_html($email) . ' больше приходить не будут. Письма о ваших заказах (статус, оплата, чек, отправка) продолжат приходить.</p><p>Если передумаете, согласие можно вернуть в личном кабинете, в разделе «Мои данные».</p>';
+        $msg = '<h2>Вы отписались от рассылки</h2><p>Рекламные сообщения на ' . esc_html($email) . ' больше приходить не будут. Письма о Ваших заказах (статус, оплата, чек, отправка) продолжат приходить.</p><p>Если передумаете, согласие можно вернуть в личном кабинете, в разделе «Мои данные».</p>';
     } else {
-        $msg = '<h2>Ссылка не подошла</h2><p>Напишите нам на vm-surtaev@yandex.ru, и мы отпишем вас вручную.</p>';
+        $msg = '<h2>Ссылка не подошла</h2><p>Напишите нам на vm-surtaev@yandex.ru, и мы отпишем Вас вручную.</p>';
     }
     wp_die($msg, 'Рассылка', array('response' => 200, 'back_link' => true));
 });
