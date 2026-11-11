@@ -179,3 +179,7 @@ body.single-product header.top+.wrap.backrow{display:none}
 .hero h1.h1logo .l1{font-family:"DM Script","Playfair Display",serif;font-weight:400;font-size:.92em}
 .hero h1.h1logo .l2{font-family:"DM Black","Playfair Display",serif;font-weight:900;text-transform:uppercase;letter-spacing:.01em;font-size:.9em}
 .hero .sub{font-family:Onest,sans-serif;font-weight:600}
+
+.hero h1.h1pic{margin:0}
+.hero h1.h1pic img{width:min(380px,72vw);height:auto;display:block}
+@media (max-width:520px){.hero h1.h1pic img{width:min(300px,80vw)}}

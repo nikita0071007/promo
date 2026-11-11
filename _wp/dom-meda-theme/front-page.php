@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 <section class="hero" style="padding:0"><div class="wrap hero-in"><div>
-<h1 class="h1logo" aria-label="Дом Мёда"><span class="l1">Дом</span> <span class="l2">Мёда</span></h1><div class="sub">Дары природы Алтая с заботой о Вас</div>
+<h1 class="h1pic"><img src="<?php echo esc_url(dm_img('title.png')); ?>" alt="Дом Мёда" width="862" height="495"></h1><div class="sub">Дары природы Алтая с заботой о Вас</div>
 <p>Натуральный мёд, продукты пчеловодства и травяные сборы с самого сердца Горного Алтая.</p>
 <a class="btn" href="<?php echo esc_url(dm_url('catalog','','')); ?>">Перейти в каталог <span>→</span></a></div>
 <div class="trust">
