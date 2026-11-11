@@ -276,3 +276,38 @@ add_action('woocommerce_order_status_processing', function ($order_id) {
     $order->add_order_note($ok ? 'Клиенту отправлено письмо «Заказ оплачен» на ' . $order->get_billing_email() : 'ПИСЬМО «ЗАКАЗ ОПЛАЧЕН» НЕ УШЛО на ' . $order->get_billing_email());
     $order->save();
 });
+
+
+/* ---------- Письмо «Заказ принят» (вместо стандартного «на удержании») ---------- */
+
+add_filter('woocommerce_email_enabled_customer_on_hold_order', '__return_false');
+
+function dm_asm_mail_new($order) {
+    $to = $order->get_billing_email();
+    if (!$to) return false;
+    $mailer = WC()->mailer();
+    $rows = '';
+    foreach ($order->get_items('line_item') as $item) {
+        $pack = $item->get_meta('Фасовка');
+        $rows .= '<li>' . esc_html($item->get_name()) . ($pack ? ' — ' . esc_html($pack) : '') . ' × ' . (int) $item->get_quantity() . ': примерно ' . esc_html(dm_asm_money($item->get_total())) . '</li>';
+    }
+    $name = trim((string) $order->get_billing_first_name());
+    $body  = '<p>Здравствуйте' . ($name !== '' ? ', ' . esc_html($name) : '') . '!</p>';
+    $body .= '<p>Благодарим Вас за заказ. Мы получили Ваш заказ №' . esc_html($order->get_order_number()) . ' и уже начали его собирать.</p>';
+    $body .= '<ul>' . $rows . '</ul>';
+    $body .= '<p>Ориентировочная сумма: <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>.</p>';
+    $body .= '<p><strong>Почему сумма ориентировочная.</strong> Мёд и мёд в сотах мы продаём по весу, а вес каждой банки и рамки немного отличается. Поэтому сначала мы взвесим Ваш заказ и посчитаем точную стоимость. Она может оказаться чуть больше или чуть меньше указанной.</p>';
+    $body .= '<p><strong>Что будет дальше.</strong> После взвешивания мы пришлём Вам точную сумму для согласования и ссылку на оплату. Оплачивать сейчас ничего не нужно. Товар зарезервирован за Вами до оплаты.</p>';
+    $body .= '<p>Статус заказа можно посмотреть в личном кабинете на сайте.</p>';
+    $body .= '<p>Вопросы: +7 913 995-97-80, +7 913 698-09-63.</p>';
+    return $mailer->send($to, 'Заказ №' . $order->get_order_number() . ' принят, взвешиваем', $mailer->wrap_message('Спасибо за Ваш заказ', $body));
+}
+
+add_action('woocommerce_order_status_on-hold', function ($order_id) {
+    $order = wc_get_order($order_id);
+    if (!$order || $order->get_meta('_dm_new_mail')) return;
+    $ok = dm_asm_mail_new($order);
+    $order->update_meta_data('_dm_new_mail', 1);
+    $order->add_order_note($ok ? 'Клиенту отправлено письмо «Заказ принят» на ' . $order->get_billing_email() : 'ПИСЬМО «ЗАКАЗ ПРИНЯТ» НЕ УШЛО на ' . $order->get_billing_email());
+    $order->save();
+});
