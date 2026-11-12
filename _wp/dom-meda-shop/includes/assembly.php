@@ -50,8 +50,9 @@ function dm_asm_lines($order) {
     return $out;
 }
 
+/* Стоимость мёда по факту — без тары. Тара идёт в заказ отдельной строкой. */
 function dm_asm_exact($line, $w) {
-    return round($line['kg'] * $w / 1000 + $line['tare'] * $line['qty']);
+    return round($line['kg'] * $w / 1000);
 }
 
 /* Вес: принимаем «518», «0,518», «0.518», «1,2». Меньше 20 — считаем килограммами (банка не весит меньше 20 г). */
@@ -95,7 +96,7 @@ function dm_asm_box($p) {
     if (!$lines) {
         echo '<p>В заказе нет товаров на развес: взвешивать нечего. Ссылку на оплату можно отправить сразу.</p>';
     } else {
-        echo '<p><strong>Впишите вес по факту</strong>: можно в граммах (518) или в килограммах (0,518), программа поймёт сама. Вес общий для всех банок одной позиции. Сумма считается сразу: цена за кг × вес + тара.</p>';
+        echo '<p><strong>Впишите вес по факту</strong>: можно в граммах (518) или в килограммах (0,518), программа поймёт сама. Вес общий для всех банок одной позиции. Мёд считается по весу (цена за кг × вес), а тара добавляется в заказ отдельной строкой.</p>';
         echo '<table class="dm-asm widefat"><thead><tr><th>Товар</th><th>Фасовка в заказе</th><th>Кол-во</th><th>Вес по факту</th><th>Сумма</th></tr></thead><tbody>';
         foreach ($lines as $id => $l) {
             $w = $l['item']->get_meta('_dm_w');
@@ -109,6 +110,7 @@ function dm_asm_box($p) {
     echo '<p style="margin-top:14px"><label><strong>Ссылка на оплату</strong> (из банка, на точную сумму):<br><input type="url" name="dm_pay_url" value="' . esc_attr($url) . '" style="width:100%" placeholder="https://..."></label></p>';
     $others = (float) $order->get_total();
     foreach ($lines as $l) $others -= (float) $l['item']->get_total();
+    foreach ($order->get_items('fee') as $f) { if ($f->get_meta('_dm_auto_tare')) $others -= (float) $f->get_total(); }
     $num = (int) round($order->get_total());
     echo '<p class="tot">Итого сейчас: <strong id="dm-tot">' . esc_html(dm_asm_money($order->get_total())) . '</strong> '
         . '<button type="button" class="button" id="dm-copy-sum" data-v="' . $num . '">Скопировать сумму для банка: <span id="dm-sum-num">' . $num . '</span></button></p>';
@@ -134,7 +136,7 @@ function f(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g," 
 var tot=document.getElementById("dm-tot"),numEl=document.getElementById("dm-sum-num"),btn=document.getElementById("dm-copy-sum");
 var msg=document.getElementById("dm-msg"),url=document.querySelector("input[name=dm_pay_url]");
 function pw(v){var w=parseFloat(String(v).replace(",","."));if(w>0&&w<20)w=w*1000;return Math.round(w)||0}
-function calc(){var t=others;rows.forEach(function(i){var w=pw(i.value);var h=i.parentNode.querySelector(".dm-hint");h.textContent=w>0?("= "+w+" г"):"";var s=i.closest("tr").querySelector(".dm-sum");if(w>0){var v=parseFloat(i.dataset.kg)*w/1000+parseFloat(i.dataset.tare);s.textContent=f(v);t+=v}else{t+=parseFloat((s.textContent||"0").replace(/[^\d]/g,""))||0}});return Math.round(t)}
+function calc(){var t=others;rows.forEach(function(i){var w=pw(i.value);var h=i.parentNode.querySelector(".dm-hint");h.textContent=w>0?("= "+w+" г; тара отдельно: "+f(parseFloat(i.dataset.tare))):"";var s=i.closest("tr").querySelector(".dm-sum");if(w>0){var v=parseFloat(i.dataset.kg)*w/1000;s.textContent=f(v);t+=v+parseFloat(i.dataset.tare)}else{t+=parseFloat((s.textContent||"0").replace(/[^\d]/g,""))||0}});return Math.round(t)}
 function upd(){var t=calc();tot.textContent=f(t);numEl.textContent=t;btn.dataset.v=t;
 msg.value="Здравствуйте"+(msg.dataset.name?", "+msg.dataset.name:"")+"! Ваш заказ №"+msg.dataset.num+" в «Доме мёда» собран и взвешен. Точная сумма: "+f(t)+".\nОплатить можно по ссылке (карта МИР, Сбербанк или СБП): "+(url.value||"[вставьте ссылку выше]")+"\nСпасибо, что выбрали нас!"}
 function cp(text,b){var old=b.textContent;function ok(){b.textContent="Скопировано";setTimeout(function(){b.textContent=old},1500)}if(navigator.clipboard){navigator.clipboard.writeText(text).then(ok)}else{var a=document.createElement("textarea");a.value=text;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();ok()}}
@@ -176,6 +178,7 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
     if ($do === 'recalc' || $do === 'send') {
         $ws = isset($_POST['dm_w']) && is_array($_POST['dm_w']) ? wp_unslash($_POST['dm_w']) : array();
         $changed = array();
+        foreach ($order->get_items('fee') as $fid => $f) { if ($f->get_meta('_dm_auto_tare')) $order->remove_item($fid); }
         foreach (dm_asm_lines($order) as $id => $l) {
             $w = isset($ws[$id]) ? dm_asm_w($ws[$id]) : 0;
             if ($w <= 0) continue;
@@ -185,7 +188,16 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
             $l['item']->set_subtotal($sum);
             $l['item']->set_total($sum);
             $l['item']->save();
-            $changed[] = $l['name'] . ': ' . (int) $w . ' г = ' . dm_asm_money($sum);
+            $changed[] = $l['name'] . ': ' . (int) $w . ' г = ' . dm_asm_money($sum) . ($l['tare'] ? ' + тара ' . dm_asm_money($l['tare'] * $l['qty']) : '');
+            if ($l['tare'] > 0) {
+                $fee = new WC_Order_Item_Fee();
+                $fee->set_name('Тара ' . $l['label'] . ($l['qty'] > 1 ? ' × ' . $l['qty'] : ''));
+                $fee->set_amount($l['tare'] * $l['qty']);
+                $fee->set_total($l['tare'] * $l['qty']);
+                $fee->set_tax_status('none');
+                $fee->add_meta_data('_dm_auto_tare', 1, true);
+                $order->add_item($fee);
+            }
         }
         $order->calculate_totals(false);
         if ($changed) $order->add_order_note('Взвешено. ' . implode('; ', $changed) . '. Итого ' . dm_asm_money($order->get_total()));
