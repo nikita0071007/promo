@@ -17,5 +17,6 @@ document.addEventListener("click",function(e){if(!pm.contains(e.target)&&e.targe
 if(u){window.addEventListener("scroll",function(){u.classList.toggle("on",window.scrollY>600)});u.addEventListener("click",function(e){e.preventDefault();window.scrollTo({top:0,behavior:"smooth"})})}})();
 </script>
 <?php wp_footer(); ?>
+<script>(function(){var h=document.querySelector('header.top');if(!h)return;function f(){h.classList.toggle('scrolled',window.scrollY>20)}f();addEventListener('scroll',f,{passive:true})})();</script>
 </body>
 </html>

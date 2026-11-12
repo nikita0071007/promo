@@ -183,3 +183,12 @@ body.single-product header.top+.wrap.backrow{display:none}
 .hero h1.h1pic{margin:0}
 .hero h1.h1pic img{width:min(380px,72vw);height:auto;display:block}
 @media (max-width:520px){.hero h1.h1pic img{width:min(300px,80vw)}}
+
+/* шапка закреплена, остальное прокручивается */
+header.top,body.inner header.top,body.inner.admin-bar header.top{position:fixed!important;top:0;left:0;right:0;inset:0 0 auto 0;z-index:50;transition:background .2s,box-shadow .2s}
+body.admin-bar header.top,body.inner.admin-bar header.top{top:32px}
+@media (max-width:782px){body.admin-bar header.top,body.inner.admin-bar header.top{top:46px}}
+header.top.scrolled{background:var(--bg);box-shadow:0 2px 14px rgba(30,51,38,.12)}
+header.top.scrolled .nav{padding-top:10px;padding-bottom:10px}
+body.inner{padding-top:84px}
+@media (max-width:900px){body.inner{padding-top:76px}}
