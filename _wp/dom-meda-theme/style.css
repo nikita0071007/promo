@@ -264,3 +264,11 @@ body.admin-bar header.top,body.inner.admin-bar header.top{top:32px!important}
 .dlv b{color:#FFF6DF!important}.dlv span{color:#D2DDCF!important}
 .cat{background:linear-gradient(145deg,#1f3a2a,#14291D)!important;border-color:rgba(243,185,62,.4)!important;box-shadow:0 12px 28px rgba(20,41,29,.28)!important}
 .cat b{color:#FFF6DF!important}.cat small{color:#C9D6C9!important}.cat svg{stroke:#F3B93E!important}
+
+/* Название как на логотипе: «Дом» (Brush Script) + «МЁДА» (Cooper Black) */
+@font-face{font-family:"DM Brush";src:url(fonts/brush-cyr.woff2) format("woff2");font-display:swap}
+@font-face{font-family:"DM Cooper";src:url(fonts/cooper-cyr.woff2) format("woff2");font-display:swap}
+.hero h1.h1brand{display:grid;justify-items:start;margin:0 0 16px;line-height:.9;font-weight:400}
+.h1brand .b1{font-family:"DM Brush","Lobster",cursive;font-size:clamp(78px,10vw,128px);color:#203B2B;margin-left:clamp(60px,8vw,100px);margin-bottom:-.18em;position:relative;z-index:2;text-shadow:0 0 1px #fff,2px 2px 0 rgba(255,250,240,.75)}
+.h1brand .b2{font-family:"DM Cooper","Roboto Serif",serif;font-size:clamp(62px,8.2vw,104px);letter-spacing:.01em;color:#F3B93E;-webkit-text-stroke:2px #203B2B;paint-order:stroke fill;text-shadow:4px 4px 0 #203B2B,5px 6px 10px rgba(20,41,29,.35)}
+@media (max-width:520px){.h1brand .b1{font-size:84px;margin-left:56px}.h1brand .b2{font-size:68px}}
