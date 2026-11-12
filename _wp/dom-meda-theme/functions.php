@@ -217,6 +217,10 @@ add_action('wp_head', function () {
             'telephone' => array('+7 913 995-97-80', '+7 913 698-09-63'),
             'address' => array('@type' => 'PostalAddress', 'streetAddress' => 'ул. Мичурина, 1В', 'addressLocality' => 'Усть-Кокса', 'addressRegion' => 'Республика Алтай', 'addressCountry' => 'RU'),
             'areaServed' => 'RU',
+            'openingHoursSpecification' => array(
+                array('@type' => 'OpeningHoursSpecification', 'dayOfWeek' => array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'), 'opens' => '09:00', 'closes' => '17:00'),
+                array('@type' => 'OpeningHoursSpecification', 'dayOfWeek' => 'Saturday', 'opens' => '09:00', 'closes' => '15:00'),
+            ),
         );
         echo '<script type="application/ld+json">' . wp_json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>' . "\n";
     }

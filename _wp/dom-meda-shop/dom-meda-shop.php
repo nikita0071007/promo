@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Дом мёда — магазин
  * Description: Цена по фасовке (вес + тара), оформление заказа без облачных касс и оплата по ссылке напрямую на счёт ИП.
- * Version: 0.7.0
+ * Version: 0.7.1
  * Author: GusevMade
  */
 if (!defined('ABSPATH')) exit;
@@ -80,6 +80,7 @@ function dm_tare($pid, $i) {
 /* ---------- Самовывоз ---------- */
 
 define('DM_PICKUP_ADDR', 'Усть-Кокса, ул. Мичурина, 1В');
+define('DM_HOURS', 'Пн–Пт 9:00–17:00, Сб 9:00–15:00, воскресенье выходной (время алтайское, МСК+4)');
 
 function dm_is_pickup($order) {
     return $order && ($order->get_meta('_dm_receive') === 'pickup' || $order->get_meta('_dm_carrier') === 'pickup');

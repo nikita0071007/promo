@@ -5,7 +5,7 @@
 </div></div></section>
 <section id="shop" class="inner2" style="padding-top:20px"><div class="wrap shop">
 <img src="<?php echo esc_url(dm_img('shop2')); ?>" alt="Магазин «Дом Мёда»">
-<div><h2>Наш магазин</h2><p>Приходите к нам в гости! У нас вы сможете попробовать натуральный мёд и другие продукты Алтая.</p><p style="color:var(--muted);font-size:15px">Усть-Кокса, ул. Мичурина 1-В<br><a href="tel:+79139959780" style="font-weight:600;color:var(--forest)">+7 913 995-97-80</a>, <a href="tel:+79136980963" style="font-weight:600;color:var(--forest)">+7 913 698-09-63</a></p><a class="btn out" href="https://yandex.ru/maps/?rtext=~50.270715%2C85.617649" target="_blank" rel="noopener">Как нас найти</a>
+<div><h2>Наш магазин</h2><p>Приходите к нам в гости! У нас вы сможете попробовать натуральный мёд и другие продукты Алтая.</p><p style="color:var(--muted);font-size:15px">Усть-Кокса, ул. Мичурина 1-В<br>Часы работы: пн–пт 9:00–17:00, сб 9:00–15:00, вс выходной<br><span style="font-size:13px">Время алтайское (МСК+4)</span><br><a href="tel:+79139959780" style="font-weight:600;color:var(--forest)">+7 913 995-97-80</a>, <a href="tel:+79136980963" style="font-weight:600;color:var(--forest)">+7 913 698-09-63</a></p><a class="btn out" href="https://yandex.ru/maps/?rtext=~50.270715%2C85.617649" target="_blank" rel="noopener">Как нас найти</a>
 <div class="pay"><span>Карты МИР</span><span>Сбербанк</span><span>СБП</span></div></div>
 <div class="map"><iframe src="https://yandex.ru/map-widget/v1/?ll=85.617649%2C50.270715&z=16&pt=85.617649%2C50.270715%2Cpm2rdm" title="Карта" loading="lazy"></iframe><a href="https://yandex.ru/maps/?rtext=~50.270715%2C85.617649" target="_blank" rel="noopener">Построить маршрут</a></div>
 </div></section>

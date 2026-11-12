@@ -256,7 +256,7 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
         $body = '<p>Здравствуйте, ' . esc_html($order->get_billing_first_name()) . '!</p>'
             . '<p>Ваш заказ №' . esc_html($order->get_order_number()) . ' собран и взвешен. Точная сумма: <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>.</p>'
             . '<ul>' . $rows . '</ul>'
-            . (dm_is_pickup($order) ? '<p>Заказ Вы заберёте сами: ' . esc_html(DM_PICKUP_ADDR) . '. Когда он будет готов, мы сообщим.</p>' : '')
+            . (dm_is_pickup($order) ? '<p>Заказ Вы заберёте сами: ' . esc_html(DM_PICKUP_ADDR) . '. Часы работы: ' . esc_html(DM_HOURS) . '. Когда он будет готов, мы сообщим.</p>' : '')
             . '<p>Оплатить можно по ссылке картой МИР, Сбербанк или через СБП. Деньги поступают напрямую на расчётный счёт ИП, после оплаты придёт чек.</p>'
             . '<p><a href="' . esc_url($url) . '" style="display:inline-block;background:#e8a317;color:#222;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:bold">Оплатить ' . esc_html(dm_asm_money($order->get_total())) . '</a></p>'
             . '<p>Если кнопка не открывается, скопируйте ссылку: ' . esc_html($url) . '</p>'
