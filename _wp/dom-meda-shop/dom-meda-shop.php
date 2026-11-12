@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Дом мёда — магазин
  * Description: Цена по фасовке (вес + тара), оформление заказа без облачных касс и оплата по ссылке напрямую на счёт ИП.
- * Version: 0.4.6
+ * Version: 0.5.0
  * Author: GusevMade
  */
 if (!defined('ABSPATH')) exit;
@@ -24,7 +24,7 @@ function dm_models() {
         array('label' => '1,5 л ≈ 2 кг',   'g' => 2000, 'tare' => 75),
     );
     $m = array(
-        'jar'      => array('name' => 'Мёд в банке: цена за кг + тара', 'sizes' => $jar, 'note' => 'Вес банки примерный. В цену входит стоимость тары.'),
+        'jar'      => array('name' => 'Мёд в банке: цена за кг, тара отдельно', 'sizes' => $jar, 'note' => 'Вес банки примерный. Стоимость тары добавляется отдельной строкой.'),
         'tea'      => array('name' => 'Чай: 50 г или 100 г', 'sizes' => array(
             array('label' => '50 г',  'fix' => 200),
             array('label' => '100 г', 'fix' => 280),
@@ -64,9 +64,16 @@ function dm_price($pid, $i) {
     $s = $sizes[$i];
     if (isset($s['fix'])) return (float) $s['fix'];
     $kg = (float) get_post_meta($pid, '_dm_kg', true);
-    $p = $kg * $s['g'] / 1000;
-    if (!empty($s['tare'])) $p += $s['tare'];
-    return round($p);
+    return round($kg * $s['g'] / 1000);
+}
+
+/* Тара считается отдельно от мёда: отдельной строкой в корзине и в заказе */
+function dm_tare($pid, $i) {
+    $k = dm_model($pid);
+    if (!$k) return 0;
+    $sizes = dm_models()[$k]['sizes'];
+    if (!isset($sizes[$i])) $i = 0;
+    return !empty($sizes[$i]['tare']) ? (float) $sizes[$i]['tare'] : 0;
 }
 
 /* ---------- Поля товара ---------- */
@@ -123,19 +130,19 @@ function dm_form() {
     $k = dm_model($pid);
     $m = dm_models()[$k];
     $def = ($k === 'jar') ? 2 : 0;
-    $prices = array();
-    foreach ($m['sizes'] as $i => $s) $prices[] = dm_price($pid, $i);
+    $prices = array(); $tares = array();
+    foreach ($m['sizes'] as $i => $s) { $prices[] = dm_price($pid, $i); $tares[] = dm_tare($pid, $i); }
     echo '<form class="cart dm-form" method="post" action="' . esc_url(get_permalink($pid)) . '" enctype="multipart/form-data">';
     echo '<fieldset class="dm-sizes"><legend>Фасовка</legend>';
     foreach ($m['sizes'] as $i => $s) {
-        echo '<label class="dm-size"><input type="radio" name="dm_size" value="' . (int) $i . '"' . ($i === $def ? ' checked' : '') . '> <span>' . esc_html($s['label']) . '</span> <b>' . dm_fmt($prices[$i]) . "\xC2\xA0₽</b></label>";
+        echo '<label class="dm-size"><input type="radio" name="dm_size" value="' . (int) $i . '"' . ($i === $def ? ' checked' : '') . '> <span>' . esc_html($s['label']) . '</span> <b>' . dm_fmt($prices[$i]) . "\xC2\xA0₽</b>" . ($tares[$i] ? ' <small>+ тара ' . dm_fmt($tares[$i]) . "\xC2\xA0₽</small>" : '') . '</label>';
     }
     echo '</fieldset>';
     if ($m['note']) echo '<p class="dm-note">' . esc_html($m['note']) . '</p>';
-    echo '<p class="dm-total">Итого: <b id="dm-p">' . dm_fmt($prices[$def]) . "\xC2\xA0₽</b></p>";
+    echo '<p class="dm-total">Итого: <b id="dm-p">' . dm_fmt($prices[$def] + $tares[$def]) . "\xC2\xA0₽</b> <small id=\"dm-pt\">" . ($tares[$def] ? '(мёд ' . dm_fmt($prices[$def]) . ' ₽ + тара ' . dm_fmt($tares[$def]) . ' ₽)' : '') . '</small></p>';
     woocommerce_quantity_input(array('min_value' => 1, 'max_value' => 50, 'input_value' => 1));
     echo '<button type="submit" name="add-to-cart" value="' . (int) $pid . '" class="single_add_to_cart_button button alt">В корзину</button></form>';
-    echo '<script>(function(){var P=' . wp_json_encode($prices) . ',f=document.querySelector(".dm-form"),o=document.getElementById("dm-p");if(!f)return;f.addEventListener("change",function(e){if(e.target.name!=="dm_size")return;var v=P[+e.target.value];o.textContent=String(v).replace(/\B(?=(\d{3})+(?!\d))/g," ")+" ₽"})})();</script>';
+    echo '<script>(function(){var P=' . wp_json_encode($prices) . ',T=' . wp_json_encode($tares) . ',f=document.querySelector(".dm-form"),o=document.getElementById("dm-p"),n=document.getElementById("dm-pt");function g(x){return String(x).replace(/\B(?=(\d{3})+(?!\d))/g," ")+" ₽"}if(!f)return;f.addEventListener("change",function(e){if(e.target.name!=="dm_size")return;var i=+e.target.value;o.textContent=g(P[i]+T[i]);n.textContent=T[i]?"(мёд "+g(P[i])+" + тара "+g(T[i])+")":""})})();</script>';
 }
 
 add_action('wp_head', function () {
@@ -162,6 +169,28 @@ add_action('woocommerce_before_calculate_totals', function ($cart) {
         }
     }
 }, 20);
+
+add_action('woocommerce_cart_calculate_fees', function ($cart) {
+    if (is_admin() && !defined('DOING_AJAX')) return;
+    foreach ($cart->get_cart() as $key => $item) {
+        if (!isset($item['dm_i'])) continue;
+        $t = dm_tare($item['product_id'], $item['dm_i']);
+        if ($t <= 0) continue;
+        $k = dm_model($item['product_id']);
+        $label = dm_models()[$k]['sizes'][$item['dm_i']]['label'];
+        $q = max(1, (int) $item['quantity']);
+        $cart->fees_api()->add_fee(array(
+            'id' => 'dm-tare-' . $key,
+            'name' => 'Тара ' . $label . ' (' . $item['data']->get_name() . ')' . ($q > 1 ? ' × ' . $q : ''),
+            'amount' => $t * $q,
+            'taxable' => false,
+        ));
+    }
+});
+
+add_action('woocommerce_checkout_create_order_fee_item', function ($item, $fee_key, $fee) {
+    if (isset($fee->id) && strpos((string) $fee->id, 'dm-tare-') === 0) $item->add_meta_data('_dm_auto_tare', 1, true);
+}, 10, 3);
 
 add_filter('woocommerce_get_item_data', function ($out, $item) {
     if (isset($item['dm_i'])) {
