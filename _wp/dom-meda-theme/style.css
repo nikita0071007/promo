@@ -245,3 +245,20 @@ footer{margin-top:auto}
 /* шапка при входе в админку: ниже панели WP */
 body.admin-bar header.top,body.inner.admin-bar header.top{top:32px!important}
 @media (max-width:782px){body.admin-bar header.top,body.inner.admin-bar header.top{top:46px!important}}
+
+/* Больше зелёного: тёмные полосы и карточки */
+#how{background:radial-gradient(ellipse at 80% 0%,#2c5139 0%,#14291D 70%);padding:60px 0!important;margin-top:20px}
+#how .sh h2{color:#FFF6DF}#how .sh::before,#how .sh::after{background:#F3B93E}
+#how .how li{background:rgba(255,250,240,.07);border:1px solid rgba(243,185,62,.35)}
+#how .how li::before{background:var(--gold);color:#14291D}
+#how .how b{color:#FFF6DF}#how .how span{color:#D9E2D2}
+#api{padding-top:56px!important}
+.rev figure{background:linear-gradient(145deg,#1f3a2a,#14291D)!important;border:1px solid rgba(243,185,62,.4)!important;box-shadow:0 12px 28px rgba(20,41,29,.3)!important}
+.rev figure::before{color:var(--gold);opacity:.8}
+.rev blockquote{color:#F3EEDC!important}
+.rev figcaption{border-top-color:rgba(243,185,62,.45)!important}
+.rev .av{background:var(--gold)!important;color:#14291D!important}
+.rev .who b{color:#FFF6DF!important}.rev .who small{color:#C5D3C7!important}
+.dlv div,.lic,.about-sec{}
+.dlv div{background:linear-gradient(145deg,#1f3a2a,#14291D)!important;border-color:rgba(243,185,62,.4)!important}
+.dlv b{color:#FFF6DF!important}.dlv span{color:#D2DDCF!important}
