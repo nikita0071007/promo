@@ -282,5 +282,5 @@ body.admin-bar header.top,body.inner.admin-bar header.top{top:32px!important}
 
 /* исходный логотип (пчёлка + надпись) вместо набранного текста */
 .hero h1.h1logo2{margin:0 0 14px;line-height:0}
-.hero h1.h1logo2 img{width:min(400px,76vw);height:auto;display:block;filter:drop-shadow(3px 4px 0 #3A2217) drop-shadow(4px 8px 12px rgba(20,12,6,.35))}
+.hero h1.h1logo2 img{width:min(380px,74vw);height:auto;display:block;filter:drop-shadow(3px 4px 0 #3A2217) drop-shadow(4px 8px 12px rgba(20,12,6,.35))}
 @media (max-width:520px){.hero h1.h1logo2 img{width:min(310px,82vw)}}
