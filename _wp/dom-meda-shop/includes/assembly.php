@@ -61,6 +61,20 @@ function dm_asm_w($raw) {
     return round($w);
 }
 
+function dm_asm_tares() {
+    return array(
+        'small' => array('Тара 0,25–0,33 л', 45),
+        'mid'   => array('Тара 0,5 л', 55),
+        'big'   => array('Тара 0,75–1,5 л', 75),
+    );
+}
+
+function dm_asm_fee_rows($order) {
+    $r = '';
+    foreach ($order->get_items('fee') as $f) $r .= '<li>' . esc_html($f->get_name()) . ': ' . esc_html(dm_asm_money($f->get_total())) . '</li>';
+    return $r;
+}
+
 function dm_asm_money($n) {
     return number_format($n, 0, '', ' ') . ' ₽';
 }
@@ -102,6 +116,11 @@ function dm_asm_box($p) {
     echo '<p><label><strong>Готовое сообщение клиенту</strong> (для мессенджера или СМС; ссылка подставится сама):<br>'
         . '<textarea id="dm-msg" rows="5" style="width:100%" readonly data-name="' . esc_attr($first) . '" data-num="' . esc_attr($order->get_order_number()) . '"></textarea></label><br>'
         . '<button type="button" class="button" id="dm-copy-msg">Скопировать сообщение</button></p>';
+    echo '<hr><p><strong>Добавить тару отдельной позицией</strong> (если нужна лишняя банка или другая тара):<br>';
+    echo '<select name="dm_tare" style="min-width:230px">';
+    foreach (dm_asm_tares() as $k => $t) echo '<option value="' . esc_attr($k) . '">' . esc_html($t[0] . ' — ' . $t[1] . ' ₽') . '</option>';
+    echo '</select> × <input type="number" name="dm_tare_qty" value="1" min="1" max="50" style="width:60px"> ';
+    echo '<button type="submit" name="dm_do" value="add_tare" class="button">Добавить тару в заказ</button></p>';
     echo '<p><button type="submit" name="dm_do" value="recalc" class="button">Сохранить вес и пересчитать</button> ';
     echo '<button type="submit" name="dm_do" value="send" class="button button-primary">Пересчитать и отправить ссылку клиенту</button></p>';
     $rurl = $order->get_meta('_dm_receipt_url');
@@ -139,6 +158,21 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
     $rurl = isset($_POST['dm_receipt_url']) ? esc_url_raw(trim(wp_unslash($_POST['dm_receipt_url']))) : '';
     $order->update_meta_data('_dm_receipt_url', $rurl);
     $do = isset($_POST['dm_do']) ? sanitize_key($_POST['dm_do']) : '';
+    if ($do === 'add_tare') {
+        $tares = dm_asm_tares();
+        $k = isset($_POST['dm_tare']) ? sanitize_key($_POST['dm_tare']) : '';
+        $q = isset($_POST['dm_tare_qty']) ? max(1, min(50, (int) $_POST['dm_tare_qty'])) : 1;
+        if (isset($tares[$k])) {
+            $fee = new WC_Order_Item_Fee();
+            $fee->set_name($tares[$k][0] . ($q > 1 ? ' × ' . $q : ''));
+            $fee->set_amount($tares[$k][1] * $q);
+            $fee->set_total($tares[$k][1] * $q);
+            $fee->set_tax_status('none');
+            $order->add_item($fee);
+            $order->calculate_totals(false);
+            $order->add_order_note('Добавлена ' . mb_strtolower($tares[$k][0]) . ' × ' . $q . ' = ' . dm_asm_money($tares[$k][1] * $q) . '. Итого ' . dm_asm_money($order->get_total()));
+        }
+    }
     if ($do === 'recalc' || $do === 'send') {
         $ws = isset($_POST['dm_w']) && is_array($_POST['dm_w']) ? wp_unslash($_POST['dm_w']) : array();
         $changed = array();
@@ -176,6 +210,7 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
         foreach ($order->get_items('line_item') as $item) {
             $rows .= '<li>' . esc_html($item->get_name()) . ' — ' . esc_html($item->get_meta('Фасовка')) . ' × ' . (int) $item->get_quantity() . ': ' . esc_html(dm_asm_money($item->get_total())) . '</li>';
         }
+        $rows .= dm_asm_fee_rows($order);
         $body = '<p>Здравствуйте, ' . esc_html($order->get_billing_first_name()) . '!</p>'
             . '<p>Ваш заказ №' . esc_html($order->get_order_number()) . ' собран и взвешен. Точная сумма: <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>.</p>'
             . '<ul>' . $rows . '</ul>'
@@ -261,6 +296,7 @@ function dm_asm_mail_paid($order, $receipt_only = false) {
     foreach ($order->get_items('line_item') as $item) {
         $rows .= '<li>' . esc_html($item->get_name()) . ' — ' . esc_html($item->get_meta('Фасовка')) . ' × ' . (int) $item->get_quantity() . ': ' . esc_html(dm_asm_money($item->get_total())) . '</li>';
     }
+    $rows .= dm_asm_fee_rows($order);
     $body = '<p>Здравствуйте, ' . esc_html($order->get_billing_first_name()) . '!</p>';
     if ($receipt_only) {
         $body .= '<p>Чек по Вашему заказу №' . esc_html($order->get_order_number()) . ' на сумму <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>:</p>';
