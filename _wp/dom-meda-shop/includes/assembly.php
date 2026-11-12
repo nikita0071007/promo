@@ -54,6 +54,13 @@ function dm_asm_exact($line, $w) {
     return round($line['kg'] * $w / 1000 + $line['tare'] * $line['qty']);
 }
 
+/* Вес: принимаем «518», «0,518», «0.518», «1,2». Меньше 20 — считаем килограммами (банка не весит меньше 20 г). */
+function dm_asm_w($raw) {
+    $w = (float) str_replace(',', '.', trim((string) $raw));
+    if ($w > 0 && $w < 20) $w *= 1000;
+    return round($w);
+}
+
 function dm_asm_money($n) {
     return number_format($n, 0, '', ' ') . ' ₽';
 }
@@ -70,16 +77,16 @@ function dm_asm_box($p) {
     if (!$order) return;
     wp_nonce_field('dm_asm', 'dm_asm_nonce');
     $lines = dm_asm_lines($order);
-    echo '<style>.dm-asm td,.dm-asm th{padding:6px 8px;text-align:left}.dm-asm input[type=number]{width:90px}.dm-asm .tot{font-size:15px;margin:10px 0}</style>';
+    echo '<style>.dm-asm td,.dm-asm th{padding:6px 8px;text-align:left}.dm-asm td{vertical-align:middle}.dm-asm input.dm-w{width:130px;font-size:18px;padding:8px 10px;text-align:right}.dm-asm .dm-hint{display:block;font-size:12px;color:#7a6a3a;margin-top:3px;min-height:15px}.dm-asm .dm-sum{font-size:17px;font-weight:700;color:#1f5a35;white-space:nowrap}.dm-asm tbody tr{background:#fffaf0}.dm-asm .tot{font-size:15px;margin:10px 0}</style>';
     if (!$lines) {
         echo '<p>В заказе нет товаров на развес: взвешивать нечего. Ссылку на оплату можно отправить сразу.</p>';
     } else {
-        echo '<p>Впишите фактический вес в граммах (общий для всех банок одной позиции). Сумма пересчитается: цена за кг × вес + тара.</p>';
-        echo '<table class="dm-asm widefat"><thead><tr><th>Товар</th><th>Фасовка в заказе</th><th>Кол-во</th><th>Вес по факту, г</th><th>Сумма</th></tr></thead><tbody>';
+        echo '<p><strong>Впишите вес по факту</strong>: можно в граммах (518) или в килограммах (0,518), программа поймёт сама. Вес общий для всех банок одной позиции. Сумма считается сразу: цена за кг × вес + тара.</p>';
+        echo '<table class="dm-asm widefat"><thead><tr><th>Товар</th><th>Фасовка в заказе</th><th>Кол-во</th><th>Вес по факту</th><th>Сумма</th></tr></thead><tbody>';
         foreach ($lines as $id => $l) {
             $w = $l['item']->get_meta('_dm_w');
             echo '<tr><td>' . esc_html($l['name']) . '</td><td>' . esc_html($l['label']) . '</td><td>' . (int) $l['qty'] . '</td>';
-            echo '<td><input type="number" min="0" step="1" class="dm-w" name="dm_w[' . (int) $id . ']" value="' . esc_attr($w) . '" placeholder="' . (int) $l['approx'] . '" data-kg="' . esc_attr($l['kg']) . '" data-tare="' . esc_attr($l['tare'] * $l['qty']) . '"></td>';
+            echo '<td><input type="text" inputmode="decimal" autocomplete="off" class="dm-w" name="dm_w[' . (int) $id . ']" value="' . esc_attr($w) . '" placeholder="примерно ' . (int) $l['approx'] . ' г" data-kg="' . esc_attr($l['kg']) . '" data-tare="' . esc_attr($l['tare'] * $l['qty']) . '"><span class="dm-hint"></span></td>';
             echo '<td class="dm-sum">' . esc_html(dm_asm_money($l['item']->get_total())) . '</td></tr>';
         }
         echo '</tbody></table>';
@@ -107,7 +114,8 @@ var rows=document.querySelectorAll(".dm-w");
 function f(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")+" ₽"}
 var tot=document.getElementById("dm-tot"),numEl=document.getElementById("dm-sum-num"),btn=document.getElementById("dm-copy-sum");
 var msg=document.getElementById("dm-msg"),url=document.querySelector("input[name=dm_pay_url]");
-function calc(){var t=others;rows.forEach(function(i){var w=parseFloat(i.value);var s=i.closest("tr").querySelector(".dm-sum");if(w>0){var v=parseFloat(i.dataset.kg)*w/1000+parseFloat(i.dataset.tare);s.textContent=f(v);t+=v}else{t+=parseFloat((s.textContent||"0").replace(/[^\d]/g,""))||0}});return Math.round(t)}
+function pw(v){var w=parseFloat(String(v).replace(",","."));if(w>0&&w<20)w=w*1000;return Math.round(w)||0}
+function calc(){var t=others;rows.forEach(function(i){var w=pw(i.value);var h=i.parentNode.querySelector(".dm-hint");h.textContent=w>0?("= "+w+" г"):"";var s=i.closest("tr").querySelector(".dm-sum");if(w>0){var v=parseFloat(i.dataset.kg)*w/1000+parseFloat(i.dataset.tare);s.textContent=f(v);t+=v}else{t+=parseFloat((s.textContent||"0").replace(/[^\d]/g,""))||0}});return Math.round(t)}
 function upd(){var t=calc();tot.textContent=f(t);numEl.textContent=t;btn.dataset.v=t;
 msg.value="Здравствуйте"+(msg.dataset.name?", "+msg.dataset.name:"")+"! Ваш заказ №"+msg.dataset.num+" в «Доме мёда» собран и взвешен. Точная сумма: "+f(t)+".\nОплатить можно по ссылке (карта МИР, Сбербанк или СБП): "+(url.value||"[вставьте ссылку выше]")+"\nСпасибо, что выбрали нас!"}
 function cp(text,b){var old=b.textContent;function ok(){b.textContent="Скопировано";setTimeout(function(){b.textContent=old},1500)}if(navigator.clipboard){navigator.clipboard.writeText(text).then(ok)}else{var a=document.createElement("textarea");a.value=text;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();ok()}}
@@ -135,7 +143,7 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
         $ws = isset($_POST['dm_w']) && is_array($_POST['dm_w']) ? wp_unslash($_POST['dm_w']) : array();
         $changed = array();
         foreach (dm_asm_lines($order) as $id => $l) {
-            $w = isset($ws[$id]) ? (float) $ws[$id] : 0;
+            $w = isset($ws[$id]) ? dm_asm_w($ws[$id]) : 0;
             if ($w <= 0) continue;
             $sum = dm_asm_exact($l, $w);
             $l['item']->update_meta_data('_dm_w', $w);
