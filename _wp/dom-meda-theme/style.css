@@ -202,3 +202,12 @@ a.why:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(30,51,38,.12)
 .why span{font-size:15px;color:var(--muted);line-height:1.45}
 @media (max-width:900px){.whys{grid-template-columns:1fr 1fr}}
 @media (max-width:520px){.whys{grid-template-columns:1fr}}
+
+/* Почему нас выбирают: тёмная лесная полоса */
+#why{background:radial-gradient(ellipse at 20% 0%,#2c5139 0%,#14291D 70%);padding:64px 0 70px!important;margin-top:30px}
+#why .sh h2{color:#FFF6DF}#why .sh::before,#why .sh::after{background:#F3B93E}
+#why .why{background:rgba(255,250,240,.06);border:1px solid rgba(243,185,62,.35);box-shadow:none;backdrop-filter:blur(2px);position:relative;overflow:hidden}
+#why .why::after{content:"";position:absolute;right:-26px;top:-26px;width:90px;height:90px;border-radius:50%;background:rgba(243,185,62,.10)}
+#why .why i{background:rgba(243,185,62,.16);border:1px solid rgba(243,185,62,.5)}
+#why .why b{color:#FFF6DF}#why .why span{color:#D9E2D2}
+#why a.why:hover{background:rgba(255,250,240,.12);box-shadow:0 14px 30px rgba(0,0,0,.28)}
