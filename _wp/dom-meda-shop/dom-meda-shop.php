@@ -2,13 +2,14 @@
 /**
  * Plugin Name: Дом мёда — магазин
  * Description: Цена по фасовке (вес + тара), оформление заказа без облачных касс и оплата по ссылке напрямую на счёт ИП.
- * Version: 0.6.1
+ * Version: 0.7.0
  * Author: GusevMade
  */
 if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/includes/assembly.php';
 require_once __DIR__ . '/includes/account.php';
 require_once __DIR__ . '/includes/extras.php';
+require_once __DIR__ . '/includes/protect.php';
 
 /* ---------- Модели цены ---------- */
 
