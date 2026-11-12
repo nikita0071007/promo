@@ -138,3 +138,15 @@ p.stars a{color:#E8A21F}
 .woocommerce table.cart .actions .coupon .button,.woocommerce table.cart .actions>.button{width:100%;float:none}
 .woocommerce table.cart td.actions .coupon .input-text{width:100%}
 }
+
+/* QA: «Как получить заказ» — варианты в столбик; чекбокс согласия — аккуратно */
+#dm_receive_field .woocommerce-input-wrapper{display:flex;flex-direction:column;gap:8px}
+#dm_receive_field .woocommerce-input-wrapper input[type=radio]{position:absolute;opacity:0;pointer-events:none}
+#dm_receive_field .woocommerce-input-wrapper label.radio{display:block;margin:0;padding:12px 14px 12px 42px;border:1.5px solid rgba(0,0,0,.12);border-radius:14px;background:#fff;line-height:1.35;position:relative;cursor:pointer;font-weight:500}
+#dm_receive_field .woocommerce-input-wrapper label.radio::before{content:"";position:absolute;left:14px;top:50%;width:18px;height:18px;margin-top:-9px;border:2px solid #b8860b;border-radius:50%;background:#fff}
+#dm_receive_field .woocommerce-input-wrapper input[type=radio]:checked+label.radio{border-color:#e8a317;background:#fff8e6}
+#dm_receive_field .woocommerce-input-wrapper input[type=radio]:checked+label.radio::after{content:"";position:absolute;left:19px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#e8a317}
+#dm_marketing_field label.checkbox{display:flex;align-items:flex-start;gap:10px;line-height:1.4}
+#dm_marketing_field label.checkbox input{margin-top:3px;flex:none}
+#dm_marketing_field label.checkbox a{display:inline}
+#dm_marketing_field .optional{display:none}
