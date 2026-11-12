@@ -218,3 +218,5 @@ a.why:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(30,51,38,.12)
 .about-gal img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}
 .about-gal figure:hover img{transform:scale(1.04)}
 .about-gal figcaption{position:absolute;left:0;right:0;bottom:0;padding:26px 14px 11px;color:#fff;font-size:14.5px;font-weight:600;text-align:left;background:linear-gradient(to top,rgba(20,41,29,.82),rgba(20,41,29,0))}
+.about-gal figure img{position:absolute;inset:0}
+.about-gal figure.w{min-height:0}
