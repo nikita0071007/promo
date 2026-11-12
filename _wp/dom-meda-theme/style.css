@@ -262,3 +262,5 @@ body.admin-bar header.top,body.inner.admin-bar header.top{top:32px!important}
 .dlv div,.lic,.about-sec{}
 .dlv div{background:linear-gradient(145deg,#1f3a2a,#14291D)!important;border-color:rgba(243,185,62,.4)!important}
 .dlv b{color:#FFF6DF!important}.dlv span{color:#D2DDCF!important}
+.cat{background:linear-gradient(145deg,#1f3a2a,#14291D)!important;border-color:rgba(243,185,62,.4)!important;box-shadow:0 12px 28px rgba(20,41,29,.28)!important}
+.cat b{color:#FFF6DF!important}.cat small{color:#C9D6C9!important}.cat svg{stroke:#F3B93E!important}
