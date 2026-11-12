@@ -13,7 +13,7 @@ cd /var/docker/dom-meda-new
 . ./.env
 D=/var/backups/dom-meda
 T=$(date +%Y-%m-%d_%H%M)
-DB=$(docker ps --format '{{.Names}}' | grep -E '^dmnew.*db' | head -1)
+DB=$(docker ps --filter network=dmnew_default --format '{{.Names}} {{.Image}}' | grep -i -E 'mariadb|mysql' | awk '{print $1}' | head -1)
 [ -z "$DB" ] && { echo "Контейнер базы не найден"; exit 1; }
 docker exec -e MYSQL_PWD="$DB_PASS" "$DB" sh -c 'mariadb-dump -uwp --single-transaction --routines wp 2>/dev/null || mysqldump -uwp --single-transaction --routines wp' | gzip > "$D/$T-db.sql.gz"
 tar czf "$D/$T-files.tar.gz" --exclude='wp/wp-content/cache' --exclude='wp/wp-content/upgrade' -C /var/docker/dom-meda-new wp/wp-content docker-compose.yml .env 2>/dev/null || tar czf "$D/$T-files.tar.gz" -C /var/docker/dom-meda-new wp/wp-content
