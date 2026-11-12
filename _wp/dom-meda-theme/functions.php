@@ -146,13 +146,78 @@ add_action('wp_head', 'dm_favicon_links', 2);
 add_action('admin_head', 'dm_favicon_links', 2);
 add_action('login_head', 'dm_favicon_links', 2);
 
-/* Яндекс.Метрика и подтверждение Вебмастера (заполнить ID и мета-код, когда будут созданы) */
-define('DM_METRIKA_ID', 114207819);        // номер счётчика, например 12345678
-define('DM_WEBMASTER_META', 'b5db076080af54d9');   // значение content из мета-тега yandex-verification
+/* Яндекс.Метрика и подтверждение Вебмастера. Счётчик грузится только после согласия на cookie. */
+define('DM_METRIKA_ID', 114207819);
+define('DM_WEBMASTER_META', 'b5db076080af54d9');
 add_action('wp_head', function () {
     if (DM_WEBMASTER_META !== '') echo '<meta name="yandex-verification" content="' . esc_attr(DM_WEBMASTER_META) . '">' . "\n";
     $id = (int) DM_METRIKA_ID;
     if ($id <= 0 || current_user_can('edit_posts')) return; // не считаем визиты администраторов
-    echo "<script>(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');ym($id,'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:false,ecommerce:'dataLayer'});</script>\n";
-    echo '<noscript><div><img src="https://mc.yandex.ru/watch/' . $id . '" style="position:absolute;left:-9999px" alt=""></div></noscript>' . "\n";
+    echo "<script>window.dmLoadMetrika=function(){if(window.__dmym)return;window.__dmym=1;(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');ym($id,'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:false,ecommerce:'dataLayer'});};if(/(?:^|; )dm_cc=1/.test(document.cookie))window.dmLoadMetrika();</script>\n";
 }, 5);
+
+/* Баннер cookie */
+add_action('wp_footer', function () {
+    $pol = esc_url(home_url('/politika/'));
+    echo '<style>#dm-cc{position:fixed;left:16px;right:16px;bottom:16px;z-index:99990;max-width:760px;margin:0 auto;background:#14291D;color:#f6efe0;border:1px solid rgba(243,185,62,.55);border-radius:16px;padding:16px 18px;box-shadow:0 14px 34px rgba(0,0,0,.35);display:none;font-size:14px;line-height:1.5}#dm-cc a{color:#f3b93e}#dm-cc .b{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}#dm-cc button{font:inherit;font-weight:600;border-radius:999px;padding:10px 22px;cursor:pointer;border:1.5px solid #f3b93e;min-height:44px}#dm-cc .y{background:#f3b93e;color:#1d1a12}#dm-cc .n{background:transparent;color:#f6efe0}@media(max-width:520px){#dm-cc{left:10px;right:10px;bottom:10px}#dm-cc button{flex:1}}</style>';
+    echo '<div id="dm-cc" role="dialog" aria-label="Использование cookie"><div>Мы используем файлы cookie и сервис Яндекс.Метрика, чтобы сайт работал удобнее и мы понимали, чем он полезен. Необходимые cookie (корзина, вход) работают всегда. Подробнее в <a href="' . $pol . '">политике конфиденциальности</a>.</div><div class="b"><button type="button" class="y" id="dm-cc-y">Принять</button><button type="button" class="n" id="dm-cc-n">Отказаться</button></div></div>';
+    echo '<script>(function(){var b=document.getElementById("dm-cc");if(!b)return;if(/(?:^|; )dm_cc=/.test(document.cookie))return;b.style.display="block";function s(v){document.cookie="dm_cc="+v+"; max-age=31536000; path=/; SameSite=Lax";b.style.display="none";if(v===1&&window.dmLoadMetrika)window.dmLoadMetrika()}document.getElementById("dm-cc-y").onclick=function(){s(1)};document.getElementById("dm-cc-n").onclick=function(){s(0)}})();</script>';
+}, 50);
+
+/* SEO: заголовок главной, описание, карточка для соцсетей, данные о магазине */
+add_filter('pre_get_document_title', function ($t) {
+    if (is_front_page()) return 'Дом мёда — алтайский мёд с доставкой по России';
+    return $t;
+});
+
+function dm_seo_desc() {
+    if (is_front_page()) return 'Натуральный мёд с Алтая от пчеловодов из Усть-Коксы: мёд в банках и в сотах, чай, перга, прополис. Доставка по всей России, самовывоз.';
+    if (function_exists('is_product_category') && is_product_category()) {
+        $d = trim(wp_strip_all_tags(term_description()));
+        return $d !== '' ? wp_trim_words($d, 28, '…') : 'Каталог «Дом мёда»: ' . single_term_title('', false) . '. Алтайский мёд и продукты пчеловодства с доставкой по России.';
+    }
+    if (is_singular()) {
+        $p = get_post();
+        $x = has_excerpt($p) ? get_the_excerpt($p) : $p->post_content;
+        $x = trim(preg_replace('/\s+/u', ' ', wp_strip_all_tags(strip_shortcodes($x))));
+        if ($x !== '') return mb_strimwidth($x, 0, 158, '…', 'UTF-8');
+    }
+    return 'Дом мёда: алтайский мёд и продукты пчеловодства от пчеловодов из Усть-Коксы с доставкой по России.';
+}
+
+add_action('wp_head', function () {
+    if (is_admin() || is_404() || is_search()) return;
+    $desc = dm_seo_desc();
+    $title = wp_get_document_title();
+    $url = is_singular() ? get_permalink() : home_url(add_query_arg(array()));
+    if (is_front_page()) $url = home_url('/');
+    $img = '';
+    if (is_singular() && has_post_thumbnail()) { $i = wp_get_attachment_image_src(get_post_thumbnail_id(), 'large'); if ($i) $img = $i[0]; }
+    if (!$img) { $f = get_theme_file_path('img/about-paseka.jpg'); $img = file_exists($f) ? get_theme_file_uri('img/about-paseka.jpg') : get_theme_file_uri('img/logo-sm.png'); }
+    $type = (function_exists('is_product') && is_product()) ? 'product' : 'website';
+    echo '<meta name="description" content="' . esc_attr($desc) . '">' . "\n";
+    echo '<meta property="og:locale" content="ru_RU">' . "\n";
+    echo '<meta property="og:type" content="' . $type . '">' . "\n";
+    echo '<meta property="og:site_name" content="Дом мёда">' . "\n";
+    echo '<meta property="og:title" content="' . esc_attr($title) . '">' . "\n";
+    echo '<meta property="og:description" content="' . esc_attr($desc) . '">' . "\n";
+    echo '<meta property="og:url" content="' . esc_url($url) . '">' . "\n";
+    echo '<meta property="og:image" content="' . esc_url($img) . '">' . "\n";
+    echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
+    if (is_front_page()) {
+        $ld = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'Store',
+            'name' => 'Дом мёда',
+            'legalName' => 'ИП Суртаев В.М.',
+            'url' => home_url('/'),
+            'logo' => get_theme_file_uri('img/logo-sm.png'),
+            'image' => $img,
+            'description' => $desc,
+            'telephone' => array('+7 913 995-97-80', '+7 913 698-09-63'),
+            'address' => array('@type' => 'PostalAddress', 'streetAddress' => 'ул. Мичурина, 1В', 'addressLocality' => 'Усть-Кокса', 'addressRegion' => 'Республика Алтай', 'addressCountry' => 'RU'),
+            'areaServed' => 'RU',
+        );
+        echo '<script type="application/ld+json">' . wp_json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>' . "\n";
+    }
+}, 3);
