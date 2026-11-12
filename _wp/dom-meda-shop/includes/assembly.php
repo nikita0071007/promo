@@ -133,6 +133,14 @@ function dm_asm_box($p) {
     foreach (dm_asm_tares() as $k => $t) echo '<option value="' . esc_attr($k) . '">' . esc_html($t[0] . ' — ' . $t[1] . ' ₽') . '</option>';
     echo '</select> × <input type="number" name="dm_tare_qty" value="1" min="1" max="50" style="width:60px"> ';
     echo '<button type="submit" name="dm_do" value="add_tare" class="button">Добавить тару в заказ</button></p>';
+    echo '<details style="margin:12px 0;background:#f6f9f6;border:1px solid #cfe0d2;border-radius:8px;padding:10px 14px"><summary style="cursor:pointer;font-weight:600">Как выставить клиенту ссылку на оплату (пошагово)</summary><ol style="margin:10px 0 0 18px;line-height:1.7">'
+        . '<li>Впишите вес по факту в таблице выше и нажмите «Сохранить вес и пересчитать». Проверьте строку «Итого».</li>'
+        . '<li>Нажмите «Скопировать сумму для банка»: сумма скопируется без пробелов и знаков.</li>'
+        . '<li>Откройте СберБизнес (приложение или сайт) и найдите раздел приёма платежей: платёжная ссылка или QR СБП на сумму.</li>'
+        . '<li>Создайте ссылку на эту сумму, в назначении напишите «Заказ №' . esc_html($order->get_order_number()) . '», скопируйте готовую ссылку.</li>'
+        . '<li>Вернитесь сюда, вставьте ссылку в поле «Ссылка на оплату» и нажмите «Пересчитать и отправить ссылку клиенту». Клиент получит письмо с кнопкой, оплата идёт через СБП, деньги приходят на счёт ИП.</li>'
+        . '<li>Когда деньги пришли на счёт, поставьте статус заказа «Оплачен». Клиент получит письмо об оплате. Чек отправьте кнопкой ниже.</li>'
+        . '</ol></details>';
     echo '<p><button type="submit" name="dm_do" value="recalc" class="button">Сохранить вес и пересчитать</button> ';
     echo '<button type="submit" name="dm_do" value="send" class="button button-primary">Пересчитать и отправить ссылку клиенту</button></p>';
     $rurl = $order->get_meta('_dm_receipt_url');
