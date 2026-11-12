@@ -145,3 +145,14 @@ function dm_favicon_links() {
 add_action('wp_head', 'dm_favicon_links', 2);
 add_action('admin_head', 'dm_favicon_links', 2);
 add_action('login_head', 'dm_favicon_links', 2);
+
+/* Яндекс.Метрика и подтверждение Вебмастера (заполнить ID и мета-код, когда будут созданы) */
+define('DM_METRIKA_ID', 114207819);        // номер счётчика, например 12345678
+define('DM_WEBMASTER_META', 'b5db076080af54d9');   // значение content из мета-тега yandex-verification
+add_action('wp_head', function () {
+    if (DM_WEBMASTER_META !== '') echo '<meta name="yandex-verification" content="' . esc_attr(DM_WEBMASTER_META) . '">' . "\n";
+    $id = (int) DM_METRIKA_ID;
+    if ($id <= 0 || current_user_can('edit_posts')) return; // не считаем визиты администраторов
+    echo "<script>(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');ym($id,'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:false,ecommerce:'dataLayer'});</script>\n";
+    echo '<noscript><div><img src="https://mc.yandex.ru/watch/' . $id . '" style="position:absolute;left:-9999px" alt=""></div></noscript>' . "\n";
+}, 5);
