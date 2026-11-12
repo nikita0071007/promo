@@ -32,7 +32,7 @@ add_action('woocommerce_account_dashboard', function () {
     if ($orders) {
         $o = $orders[0];
         echo '<div class="dm-acc-card"><div class="dm-acc-top"><strong>Последний заказ №' . esc_html($o->get_order_number()) . '</strong><span class="dm-st dm-st-' . esc_attr($o->get_status()) . '">' . esc_html(wc_get_order_status_name($o->get_status())) . '</span></div>';
-        echo '<div class="dm-steps">' . dm_acc_steps($o->get_status()) . '</div>';
+        echo '<div class="dm-steps">' . dm_acc_steps($o->get_status(), dm_is_pickup($o)) . '</div>';
         if (function_exists('dm_ship_info')) echo dm_ship_info($o);
         echo '<p class="dm-acc-sum">Сумма: <strong>' . wp_kses_post($o->get_formatted_order_total()) . '</strong>' . ($o->get_status() === 'on-hold' ? ' <span>ориентировочная, точную назовём после взвешивания</span>' : '') . '</p>';
         $url = $o->get_meta('_dm_pay_url');
@@ -43,8 +43,8 @@ add_action('woocommerce_account_dashboard', function () {
     }
 });
 
-function dm_acc_steps($status) {
-    $steps = array('on-hold' => 'Взвешиваем', 'dm-await-pay' => 'Ждёт оплаты', 'processing' => 'Оплачен', 'completed' => 'Отправлен');
+function dm_acc_steps($status, $pickup = false) {
+    $steps = array('on-hold' => 'Взвешиваем', 'dm-await-pay' => 'Ждёт оплаты', 'processing' => 'Оплачен', 'completed' => $pickup ? 'Готов к выдаче' : 'Отправлен');
     $keys = array_keys($steps); $cur = array_search($status, $keys, true);
     $h = '';
     $i = 0;

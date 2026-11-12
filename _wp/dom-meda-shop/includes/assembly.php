@@ -92,6 +92,16 @@ function dm_asm_box($p) {
     if (!$order) return;
     wp_nonce_field('dm_asm', 'dm_asm_nonce');
     $lines = dm_asm_lines($order);
+    $pickup = dm_is_pickup($order);
+    $phone = $order->get_billing_phone();
+    $note = $order->get_customer_note();
+    echo '<div style="background:' . ($pickup ? '#e7f4ea' : '#fff4dc') . ';border:1px solid #d8cfae;border-radius:8px;padding:10px 14px;margin:0 0 12px;line-height:1.7">';
+    echo '<strong style="font-size:15px">' . ($pickup ? '🏠 САМОВЫВОЗ' : '📦 ДОСТАВКА') . '</strong> · ' . esc_html($order->get_billing_first_name());
+    if ($phone) echo ' · <a href="tel:' . esc_attr(preg_replace('/[^\d+]/', '', $phone)) . '">' . esc_html($phone) . '</a>';
+    if ($order->get_billing_email()) echo ' · ' . esc_html($order->get_billing_email());
+    echo '<br>' . ($pickup ? 'Заберёт сам: ' . esc_html(DM_PICKUP_ADDR) : 'Адрес: ' . esc_html($order->get_billing_address_1()));
+    if ($note) echo '<br><strong>Комментарий клиента:</strong> ' . esc_html($note);
+    echo '<br><button type="button" class="button" id="dm-print" style="margin-top:6px">🖨 Распечатать лист сборки</button></div>';
     echo '<style>.dm-asm td,.dm-asm th{padding:6px 8px;text-align:left}.dm-asm td{vertical-align:middle}.dm-asm input.dm-w{width:130px;font-size:18px;padding:8px 10px;text-align:right}.dm-asm .dm-hint{display:block;font-size:12px;color:#7a6a3a;margin-top:3px;min-height:15px}.dm-asm .dm-sum{font-size:17px;font-weight:700;color:#1f5a35;white-space:nowrap}.dm-asm tbody tr{background:#fffaf0}.dm-asm .tot{font-size:15px;margin:10px 0}</style>';
     if (!$lines) {
         echo '<p>В заказе нет товаров на развес: взвешивать нечего. Ссылку на оплату можно отправить сразу.</p>';
@@ -129,7 +139,17 @@ function dm_asm_box($p) {
     echo '<hr><p><label><strong>Чек об оплате</strong> (ссылка на чек из кассы или банка):<br><input type="url" name="dm_receipt_url" value="' . esc_attr($rurl) . '" style="width:100%" placeholder="https://..."></label></p>';
     echo '<p><button type="submit" name="dm_do" value="receipt" class="button">Отправить клиенту чек</button> <span class="description">Письмо «Заказ оплачен» уходит само, когда Вы ставите статус «Оплачен». Чек отправляйте этой кнопкой, когда получите ссылку.</span></p>';
     echo '<p class="description">После отправки статус станет «Ждёт оплаты». Когда деньги поступили, поставьте статус «Оплачен», а при отправке посылки — «Отправлен».</p>';
+    $info = array(
+        'num' => $order->get_order_number(),
+        'who' => trim($order->get_billing_first_name() . ' ' . $phone),
+        'way' => $pickup ? 'САМОВЫВОЗ: ' . DM_PICKUP_ADDR : 'ДОСТАВКА: ' . $order->get_billing_address_1(),
+        'note' => (string) $note,
+        'pickup' => $pickup ? 1 : 0,
+        'items' => array(),
+    );
+    foreach ($lines as $id => $l) $info['items'][] = array('id' => (int) $id, 'name' => $l['name'], 'label' => $l['label'], 'qty' => $l['qty'], 'approx' => (int) $l['approx']);
     echo '<script>(function(){
+var info=' . wp_json_encode($info, JSON_UNESCAPED_UNICODE) . ';
 var others=' . json_encode($others) . ';
 var rows=document.querySelectorAll(".dm-w");
 function f(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")+" ₽"}
@@ -138,11 +158,13 @@ var msg=document.getElementById("dm-msg"),url=document.querySelector("input[name
 function pw(v){var w=parseFloat(String(v).replace(",","."));if(w>0&&w<20)w=w*1000;return Math.round(w)||0}
 function calc(){var t=others;rows.forEach(function(i){var w=pw(i.value);var h=i.parentNode.querySelector(".dm-hint");h.textContent=w>0?("= "+w+" г; тара отдельно: "+f(parseFloat(i.dataset.tare))):"";var s=i.closest("tr").querySelector(".dm-sum");if(w>0){var v=parseFloat(i.dataset.kg)*w/1000;s.textContent=f(v);t+=v+parseFloat(i.dataset.tare)}else{t+=(parseFloat((s.textContent||"0").replace(/[^\d]/g,""))||0)+parseFloat(i.dataset.tare)}});return Math.round(t)}
 function upd(){var t=calc();tot.textContent=f(t);numEl.textContent=t;btn.dataset.v=t;
-msg.value="Здравствуйте"+(msg.dataset.name?", "+msg.dataset.name:"")+"! Ваш заказ №"+msg.dataset.num+" в «Доме мёда» собран и взвешен. Точная сумма: "+f(t)+".\nОплатить можно по ссылке (карта МИР, Сбербанк или СБП): "+(url.value||"[вставьте ссылку выше]")+"\nСпасибо, что выбрали нас!"}
+msg.value="Здравствуйте"+(msg.dataset.name?", "+msg.dataset.name:"")+"! Ваш заказ №"+msg.dataset.num+" в «Доме мёда» собран и взвешен. Точная сумма: "+f(t)+"."+(info.pickup?"\nЗаказ заберёте сами: "+info.way.replace("САМОВЫВОЗ: ",""):"")+"\nОплатить можно по ссылке (карта МИР, Сбербанк или СБП): "+(url.value||"[вставьте ссылку выше]")+"\nСпасибо, что выбрали нас!"}
 function cp(text,b){var old=b.textContent;function ok(){b.textContent="Скопировано";setTimeout(function(){b.textContent=old},1500)}if(navigator.clipboard){navigator.clipboard.writeText(text).then(ok)}else{var a=document.createElement("textarea");a.value=text;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();ok()}}
 rows.forEach(function(i){i.addEventListener("input",upd)});url.addEventListener("input",upd);
 btn.addEventListener("click",function(){var v=btn.dataset.v;cp(v,btn);setTimeout(upd,1600)});
 document.getElementById("dm-copy-msg").addEventListener("click",function(){cp(msg.value,this)});
+function e(x){return String(x).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+document.getElementById("dm-print").addEventListener("click",function(){var r="";info.items.forEach(function(it){var inp=document.querySelector("input[name=\"dm_w["+it.id+"]\"]");r+="<tr><td>&#9744;</td><td>"+e(it.name)+"</td><td>"+e(it.label)+"</td><td>"+it.qty+"</td><td>"+(inp&&inp.value?e(inp.value):"примерно "+it.approx+" г")+"</td></tr>"});var w=window.open("","_blank");w.document.write("<meta charset=utf-8><title>Лист сборки</title><body style=font-family:sans-serif><h2>Заказ №"+e(info.num)+"</h2><p><b>"+e(info.way)+"</b></p><p>"+e(info.who)+"</p>"+(info.note?"<p><b>Комментарий клиента:</b> "+e(info.note)+"</p>":"")+"<table border=1 cellpadding=8 cellspacing=0 style=border-collapse:collapse;font-size:16px><tr><th></th><th>Товар</th><th>Фасовка</th><th>Кол-во</th><th>Вес</th></tr>"+r+"</table>");w.document.close();w.focus();w.print()});
 upd();})();</script>';
 }
 
@@ -226,6 +248,7 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
         $body = '<p>Здравствуйте, ' . esc_html($order->get_billing_first_name()) . '!</p>'
             . '<p>Ваш заказ №' . esc_html($order->get_order_number()) . ' собран и взвешен. Точная сумма: <strong>' . esc_html(dm_asm_money($order->get_total())) . '</strong>.</p>'
             . '<ul>' . $rows . '</ul>'
+            . (dm_is_pickup($order) ? '<p>Заказ Вы заберёте сами: ' . esc_html(DM_PICKUP_ADDR) . '. Когда он будет готов, мы сообщим.</p>' : '')
             . '<p>Оплатить можно по ссылке картой МИР, Сбербанк или через СБП. Деньги поступают напрямую на расчётный счёт ИП, после оплаты придёт чек.</p>'
             . '<p><a href="' . esc_url($url) . '" style="display:inline-block;background:#e8a317;color:#222;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:bold">Оплатить ' . esc_html(dm_asm_money($order->get_total())) . '</a></p>'
             . '<p>Если кнопка не открывается, скопируйте ссылку: ' . esc_html($url) . '</p>'
@@ -246,13 +269,13 @@ add_action('admin_menu', function () {
 
 function dm_asm_table($orders, $empty) {
     if (!$orders) { echo '<p>' . esc_html($empty) . '</p>'; return; }
-    echo '<table class="widefat striped"><thead><tr><th>№</th><th>Дата</th><th>Клиент</th><th>Телефон</th><th>Состав</th><th>Сумма</th><th></th></tr></thead><tbody>';
+    echo '<table class="widefat striped"><thead><tr><th>№</th><th>Дата</th><th>Клиент</th><th>Телефон</th><th>Получение</th><th>Состав</th><th>Сумма</th><th></th></tr></thead><tbody>';
     foreach ($orders as $o) {
         $names = array();
         foreach ($o->get_items('line_item') as $it) $names[] = $it->get_name() . ' (' . $it->get_meta('Фасовка') . ') × ' . $it->get_quantity();
         $ts = (int) $o->get_meta('_dm_sent_ts');
         $late = ($o->get_status() === 'dm-await-pay' && $ts && time() - $ts > DAY_IN_SECONDS);
-        echo '<tr' . ($late ? ' style="background:#fff0d6"' : '') . '><td>' . esc_html($o->get_order_number()) . ($late ? ' <span title="Ждёт оплаты больше суток">⏰</span>' : '') . '</td><td>' . esc_html(wc_format_datetime($o->get_date_created(), 'd.m H:i')) . '</td><td>' . esc_html($o->get_billing_first_name()) . '</td><td>' . esc_html($o->get_billing_phone()) . '</td><td>' . esc_html(implode('; ', $names)) . '</td><td>' . esc_html(dm_asm_money($o->get_total())) . '</td>';
+        echo '<tr' . ($late ? ' style="background:#fff0d6"' : '') . '><td>' . esc_html($o->get_order_number()) . ($late ? ' <span title="Ждёт оплаты больше суток">⏰</span>' : '') . '</td><td>' . esc_html(wc_format_datetime($o->get_date_created(), 'd.m H:i')) . '</td><td>' . esc_html($o->get_billing_first_name()) . '</td><td>' . esc_html($o->get_billing_phone()) . '</td><td>' . (dm_is_pickup($o) ? '🏠 Самовывоз' : '📦 Доставка') . '</td><td>' . esc_html(implode('; ', $names)) . '</td><td>' . esc_html(dm_asm_money($o->get_total())) . '</td>';
         echo '<td><a class="button button-primary" href="' . esc_url($o->get_edit_order_url()) . '">Собрать</a></td></tr>';
     }
     echo '</tbody></table>';

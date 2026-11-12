@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Дом мёда — магазин
  * Description: Цена по фасовке (вес + тара), оформление заказа без облачных касс и оплата по ссылке напрямую на счёт ИП.
- * Version: 0.5.0
+ * Version: 0.6.0
  * Author: GusevMade
  */
 if (!defined('ABSPATH')) exit;
@@ -74,6 +74,14 @@ function dm_tare($pid, $i) {
     $sizes = dm_models()[$k]['sizes'];
     if (!isset($sizes[$i])) $i = 0;
     return !empty($sizes[$i]['tare']) ? (float) $sizes[$i]['tare'] : 0;
+}
+
+/* ---------- Самовывоз ---------- */
+
+define('DM_PICKUP_ADDR', 'Усть-Кокса, ул. Мичурина, 1В');
+
+function dm_is_pickup($order) {
+    return $order && ($order->get_meta('_dm_receive') === 'pickup' || $order->get_meta('_dm_carrier') === 'pickup');
 }
 
 /* ---------- Поля товара ---------- */
@@ -226,6 +234,19 @@ add_filter('woocommerce_checkout_fields', function ($f) {
     $b['billing_email']['priority'] = 30;
     $b['billing_address_1']['label'] = 'Город и адрес доставки или пункт выдачи';
     $b['billing_address_1']['priority'] = 40;
+    $b['dm_receive'] = array(
+        'type' => 'radio',
+        'label' => 'Как получить заказ',
+        'required' => true,
+        'default' => 'delivery',
+        'options' => array(
+            'delivery' => 'Доставка (СДЭК, Ozon, Пятёрочка, Почта России)',
+            'pickup' => 'Самовывоз: ' . DM_PICKUP_ADDR,
+        ),
+        'class' => array('form-row-wide'),
+        'priority' => 35,
+    );
+    if (isset($_POST['dm_receive']) && $_POST['dm_receive'] === 'pickup') $b['billing_address_1']['required'] = false;
     $b['dm_marketing'] = array(
         'type' => 'checkbox',
         'label' => 'Хочу получать информацию об акциях и новинках (необязательно). <a href="' . esc_url(home_url('/politika/')) . '" target="_blank" rel="noopener">Политика конфиденциальности</a>',
@@ -237,7 +258,18 @@ add_filter('woocommerce_checkout_fields', function ($f) {
     return $f;
 });
 
+add_action('wp_footer', function () {
+    if (!function_exists('is_checkout') || !is_checkout()) return;
+    echo '<script>(function(){function s(){var p=document.querySelector("input[name=dm_receive]:checked"),f=document.getElementById("billing_address_1_field");if(f)f.style.display=(p&&p.value==="pickup")?"none":""}document.addEventListener("change",function(e){if(e.target&&e.target.name==="dm_receive")s()});if(window.jQuery)jQuery(document.body).on("updated_checkout",s);s()})();</script>';
+});
+
 add_action('woocommerce_checkout_create_order', function ($order) {
+    $pick = (isset($_POST['dm_receive']) && $_POST['dm_receive'] === 'pickup');
+    $order->update_meta_data('_dm_receive', $pick ? 'pickup' : 'delivery');
+    if ($pick) {
+        $order->update_meta_data('_dm_carrier', 'pickup');
+        if (!$order->get_billing_address_1()) $order->set_billing_address_1('Самовывоз: ' . DM_PICKUP_ADDR);
+    }
     $order->update_meta_data('_dm_marketing', !empty($_POST['dm_marketing']) ? 1 : 0);
     if (!empty($_POST['dm_marketing'])) $order->update_meta_data('_dm_marketing_ts', time());
 });

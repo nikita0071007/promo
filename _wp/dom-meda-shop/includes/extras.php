@@ -28,6 +28,7 @@ function dm_ship_data($order) {
 
 /* Блок в кабинете: сколько знаем о посылке */
 function dm_ship_info($order) {
+    if (dm_is_pickup($order)) return '<p class="dm-ship"><strong>Самовывоз:</strong> ' . esc_html(DM_PICKUP_ADDR) . '. Когда заказ будет готов, мы напишем Вам.</p>';
     $d = dm_ship_data($order);
     if (!$d['name'] && !$d['track']) return '';
     $h = '<p class="dm-ship"><strong>Отправка:</strong> ' . esc_html($d['name']);
@@ -87,6 +88,10 @@ function dm_ship_mail($order) {
     if (!$to) return false;
     $d = dm_ship_data($order);
     $mailer = WC()->mailer();
+    if (dm_is_pickup($order)) {
+        $body = '<p>Здравствуйте, ' . esc_html($order->get_billing_first_name()) . '!</p><p>Ваш заказ №' . esc_html($order->get_order_number()) . ' готов к выдаче.</p><p>Адрес: <strong>' . esc_html(DM_PICKUP_ADDR) . '</strong>. Перед приездом напишите или позвоните, чтобы договориться о времени: +7 913 995-97-80, +7 913 698-09-63.</p>';
+        return $mailer->send($to, 'Заказ №' . $order->get_order_number() . ' готов к выдаче', $mailer->wrap_message('Заказ готов к выдаче', $body));
+    }
     $body = '<p>Здравствуйте, ' . esc_html($order->get_billing_first_name()) . '!</p><p>Ваш заказ №' . esc_html($order->get_order_number()) . ' отправлен.</p>';
     if ($d['name']) $body .= '<p>Служба доставки: <strong>' . esc_html($d['name']) . '</strong></p>';
     if ($d['track']) {
