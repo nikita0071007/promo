@@ -284,3 +284,24 @@ body.admin-bar header.top,body.inner.admin-bar header.top{top:32px!important}
 .hero h1.h1logo2{margin:0 0 14px;line-height:0}
 .hero h1.h1logo2 img{width:min(380px,74vw);height:auto;display:block;filter:drop-shadow(3px 4px 0 #3A2217) drop-shadow(4px 8px 12px rgba(20,12,6,.35))}
 @media (max-width:520px){.hero h1.h1logo2 img{width:min(310px,82vw)}}
+
+/* ===== Зелёная система на внутренних страницах ===== */
+/* заголовок страницы — тёмная полоса на всю ширину */
+body.inner main>section>.wrap>.sh:first-child,body.inner main>.wrap>.sh:first-child,body.inner main>.sh:first-child{background:#14291D;position:relative;padding:30px 0;margin-bottom:34px;box-shadow:0 0 0 100vmax #14291D;clip-path:inset(0 -100vmax);background-image:radial-gradient(ellipse at 20% 0%,#2c5139 0%,transparent 70%)}
+body.inner main .sh:first-child h2{color:#FFF6DF}
+body.inner main .sh:first-child::before,body.inner main .sh:first-child::after{background:#F3B93E}
+/* шаги оплаты и способы */
+.stp li,.pm2>div{background:linear-gradient(145deg,#1f3a2a,#14291D)!important;border:1px solid rgba(243,185,62,.4)!important;color:#D9E2D2}
+.stp li b,.pm2>div b{color:#FFF6DF!important}.stp li span,.pm2>div span{color:#D2DDCF!important}
+.stp li::before{background:#F3B93E!important;color:#14291D!important}
+/* карточки товаров: тёмный низ */
+.pc,.woocommerce ul.products li.product{background:linear-gradient(160deg,#1f3a2a,#14291D)!important;border:1px solid rgba(243,185,62,.4)!important;box-shadow:0 12px 26px rgba(20,41,29,.28)!important}
+.woocommerce ul.products li.product .woocommerce-loop-product__title,.pc b,.pc h3{color:#FFF6DF!important}
+.woocommerce ul.products li.product .price,.pc small,.pc .price{color:#F3D58A!important}
+.woocommerce ul.products li.product .price small,.woocommerce ul.products li.product .woocommerce-loop-product__title+*{color:#C9D6C9}
+/* сайдбар/боковые карточки кабинета: меню кабинета */
+.woocommerce-MyAccount-navigation a{background:linear-gradient(145deg,#1f3a2a,#14291D)!important;color:#FFF6DF!important;border-color:rgba(243,185,62,.4)!important}
+.woocommerce-MyAccount-navigation .is-active a{background:#F3B93E!important;color:#14291D!important}
+/* пустая корзина и уведомления */
+.woocommerce-info,.woocommerce-message{background:linear-gradient(145deg,#1f3a2a,#14291D)!important;color:#FFF6DF!important;border-color:rgba(243,185,62,.4)!important}
+.woocommerce-info a,.woocommerce-message a{color:#F3B93E}
