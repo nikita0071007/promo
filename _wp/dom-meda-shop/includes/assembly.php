@@ -109,10 +109,20 @@ function dm_asm_box($p) {
     if ($note) echo '<br><strong>Комментарий клиента:</strong> ' . esc_html($note);
     echo '<br><button type="button" class="button" id="dm-print" style="margin-top:6px">🖨 Распечатать лист сборки</button></div>';
     echo '<style>.dm-asm td,.dm-asm th{padding:6px 8px;text-align:left}.dm-asm td{vertical-align:middle}.dm-asm input.dm-w{width:130px;font-size:18px;padding:8px 10px;text-align:right}.dm-asm .dm-hint{display:block;font-size:12px;color:#7a6a3a;margin-top:3px;min-height:15px}.dm-asm .dm-sum{font-size:17px;font-weight:700;color:#1f5a35;white-space:nowrap}.dm-asm tbody tr{background:#fffaf0}.dm-asm .tot{font-size:15px;margin:10px 0}</style>';
+    $others = (float) $order->get_total();
+    foreach ($lines as $l) $others -= (float) $l['item']->get_total();
+    $manual = '';
+    foreach ($order->get_items('fee') as $fid => $f) {
+        $others -= (float) $f->get_total();
+        if ($f->get_meta('_dm_auto_tare')) continue;
+        $manual .= '<label style="display:block"><input type="checkbox" class="dm-mf" name="dm_rm_fee[]" data-amt="' . esc_attr((float) $f->get_total()) . '" value="' . (int) $fid . '"> убрать: ' . esc_html($f->get_name()) . ' — ' . esc_html(dm_asm_money($f->get_total())) . '</label>';
+    }
+    $num = (int) round($order->get_total());
+    echo '<h3 style="margin:18px 0 6px;font-size:15px;color:#1f5a35"><span style="display:inline-block;background:#1f5a35;color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;margin-right:8px">1</span>Взвесьте и впишите вес</h3>';
     if (!$lines) {
         echo '<p>В заказе нет товаров на развес: взвешивать нечего. Ссылку на оплату можно отправить сразу.</p>';
     } else {
-        echo '<p><strong>Впишите вес по факту</strong>: можно в граммах (518) или в килограммах (0,518), программа поймёт сама. Вес общий для всех банок одной позиции. Мёд считается по весу (цена за кг × вес), а тара добавляется в заказ отдельной строкой.</p>';
+        echo '<p class="description">Вес можно писать в граммах (518) или килограммах (0,518). Вес общий для всех банок одной позиции. Тару можно поменять или поставить 0.</p>';
         echo '<table class="dm-asm widefat"><thead><tr><th>Товар</th><th>Фасовка в заказе</th><th>Кол-во</th><th>Вес по факту</th><th>Мёд, ₽</th><th>Тара, ₽</th></tr></thead><tbody>';
         foreach ($lines as $id => $l) {
             $w = $l['item']->get_meta('_dm_w');
@@ -123,30 +133,29 @@ function dm_asm_box($p) {
         }
         echo '</tbody></table>';
     }
-    $url = $order->get_meta('_dm_pay_url');
-    echo '<p style="margin-top:14px"><label><strong>Ссылка на оплату</strong> (из банка, на точную сумму):<br><input type="url" name="dm_pay_url" value="' . esc_attr($url) . '" style="width:100%" placeholder="https://..."></label></p>';
-    $others = (float) $order->get_total();
-    foreach ($lines as $l) $others -= (float) $l['item']->get_total();
-    $manual = '';
-    foreach ($order->get_items('fee') as $fid => $f) {
-        $others -= (float) $f->get_total();
-        if ($f->get_meta('_dm_auto_tare')) continue;
-        $manual .= '<label style="display:block"><input type="checkbox" class="dm-mf" name="dm_rm_fee[]" data-amt="' . esc_attr((float) $f->get_total()) . '" value="' . (int) $fid . '"> убрать: ' . esc_html($f->get_name()) . ' — ' . esc_html(dm_asm_money($f->get_total())) . '</label>';
-    }
-    $num = (int) round($order->get_total());
+    if ($manual) echo '<div style="background:#fff4dc;border:1px solid #d8cfae;border-radius:8px;padding:8px 12px;margin:6px 0"><strong>Добавлено вручную (входит в сумму):</strong>' . $manual . '<span class="description">Поставьте галочку и нажмите «Сохранить вес и пересчитать», чтобы убрать строку.</span></div>';
+    echo '<h3 style="margin:18px 0 6px;font-size:15px;color:#1f5a35"><span style="display:inline-block;background:#1f5a35;color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;margin-right:8px">2</span>Проверьте сумму</h3>';
     echo '<p class="tot">Итого сейчас: <strong id="dm-tot">' . esc_html(dm_asm_money($order->get_total())) . '</strong> '
         . '<button type="button" class="button" id="dm-copy-sum" data-v="' . $num . '">Скопировать сумму для банка: <span id="dm-sum-num">' . $num . '</span></button></p>';
-    if ($manual) echo '<div style="background:#fff4dc;border:1px solid #d8cfae;border-radius:8px;padding:8px 12px;margin:6px 0"><strong>Добавлено вручную (входит в сумму):</strong>' . $manual . '<span class="description">Поставьте галочку и нажмите «Сохранить вес и пересчитать», чтобы убрать строку.</span></div>';
+    echo '<p><button type="submit" name="dm_do" value="recalc" class="button">Сохранить вес и пересчитать</button> <span class="description">сохраняет вес и тару в заказе, ничего не отправляя клиенту</span></p>';
+    echo '<h3 style="margin:18px 0 6px;font-size:15px;color:#1f5a35"><span style="display:inline-block;background:#1f5a35;color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;margin-right:8px">3</span>Создайте ссылку в СберБизнес и вставьте сюда</h3>';
+    echo '<p><a class="button button-primary" href="https://sbi.sberbank.ru:9443/ic/ufs/login.html" target="_blank" rel="noopener noreferrer" style="background:#21a038;border-color:#21a038">Открыть СберБизнес ↗</a> <span class="description">откроется в новой вкладке, сюда вернётесь после создания ссылки</span></p>';
+    $url = $order->get_meta('_dm_pay_url');
+    echo '<p style="margin-top:14px"><label><strong>Ссылка на оплату</strong> (из банка, на точную сумму):<br><input type="url" name="dm_pay_url" value="' . esc_attr($url) . '" style="width:100%" placeholder="https://..."></label></p>';
+    echo '<h3 style="margin:18px 0 6px;font-size:15px;color:#1f5a35"><span style="display:inline-block;background:#1f5a35;color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;margin-right:8px">4</span>Отправьте клиенту</h3>';
+    echo '<p><button type="submit" name="dm_do" value="send" class="button button-primary button-hero">Отправить клиенту точную сумму и ссылку</button></p>';
+    echo '<details style="margin:8px 0"><summary style="cursor:pointer">Или отправить сообщением сами (мессенджер, СМС)</summary>';
     $first = $order->get_billing_first_name();
     echo '<p><label><strong>Готовое сообщение клиенту</strong> (для мессенджера или СМС; ссылка подставится сама):<br>'
         . '<textarea id="dm-msg" rows="5" style="width:100%" readonly data-name="' . esc_attr($first) . '" data-num="' . esc_attr($order->get_order_number()) . '"></textarea></label><br>'
         . '<button type="button" class="button" id="dm-copy-msg">Скопировать сообщение</button></p>';
+    echo '</details>';
+    echo '<details style="margin:14px 0;border-top:1px solid #ddd;padding-top:8px"><summary style="cursor:pointer;font-weight:600">Дополнительно: лишняя тара, чек об оплате, инструкция</summary>';
     echo '<hr><p><strong>Добавить тару отдельной позицией</strong> (если нужна лишняя банка или другая тара):<br>';
     echo '<select name="dm_tare" style="min-width:230px">';
     foreach (dm_asm_tares() as $k => $t) echo '<option value="' . esc_attr($k) . '">' . esc_html($t[0] . ' — ' . $t[1] . ' ₽') . '</option>';
     echo '</select> × <input type="number" name="dm_tare_qty" value="1" min="1" max="50" style="width:60px"> ';
     echo '<button type="submit" name="dm_do" value="add_tare" class="button">Добавить тару в заказ</button></p>';
-    echo '<p><a class="button button-primary" href="https://sbi.sberbank.ru:9443/ic/ufs/login.html" target="_blank" rel="noopener noreferrer" style="background:#21a038;border-color:#21a038">Открыть СберБизнес ↗</a> <span class="description">откроется в новой вкладке, сюда вернётесь после создания ссылки</span></p>';
     echo '<details style="margin:12px 0;background:#f6f9f6;border:1px solid #cfe0d2;border-radius:8px;padding:10px 14px"><summary style="cursor:pointer;font-weight:600">Как выставить клиенту ссылку на оплату (пошагово)</summary><ol style="margin:10px 0 0 18px;line-height:1.7">'
         . '<li>Впишите вес по факту в таблице выше и нажмите «Сохранить вес и пересчитать». Проверьте строку «Итого».</li>'
         . '<li>Нажмите «Скопировать сумму для банка»: сумма скопируется без пробелов и знаков.</li>'
@@ -155,11 +164,10 @@ function dm_asm_box($p) {
         . '<li>Вернитесь сюда, вставьте ссылку в поле «Ссылка на оплату» и нажмите «Пересчитать и отправить ссылку клиенту». Клиент получит письмо с кнопкой, оплата идёт через СБП, деньги приходят на счёт ИП.</li>'
         . '<li>Когда деньги пришли на счёт, поставьте статус заказа «Оплачен». Клиент получит письмо об оплате. Чек отправьте кнопкой ниже.</li>'
         . '</ol></details>';
-    echo '<p><button type="submit" name="dm_do" value="recalc" class="button">Сохранить вес и пересчитать</button> ';
-    echo '<button type="submit" name="dm_do" value="send" class="button button-primary">Пересчитать и отправить ссылку клиенту</button></p>';
     $rurl = $order->get_meta('_dm_receipt_url');
     echo '<hr><p><label><strong>Чек об оплате</strong> (ссылка на чек из кассы или банка):<br><input type="url" name="dm_receipt_url" value="' . esc_attr($rurl) . '" style="width:100%" placeholder="https://..."></label></p>';
     echo '<p><button type="submit" name="dm_do" value="receipt" class="button">Отправить клиенту чек</button> <span class="description">Письмо «Заказ оплачен» уходит само, когда Вы ставите статус «Оплачен». Чек отправляйте этой кнопкой, когда получите ссылку.</span></p>';
+    echo '</details>';
     echo '<p class="description">После отправки статус станет «Ждёт оплаты». Когда деньги поступили, поставьте статус «Оплачен», а при отправке посылки — «Отправлен».</p>';
     $info = array(
         'num' => $order->get_order_number(),
@@ -303,7 +311,7 @@ function dm_asm_table($orders, $empty) {
         $ts = (int) $o->get_meta('_dm_sent_ts');
         $late = ($o->get_status() === 'dm-await-pay' && $ts && time() - $ts > DAY_IN_SECONDS);
         echo '<tr' . ($late ? ' style="background:#fff0d6"' : '') . '><td>' . esc_html($o->get_order_number()) . ($late ? ' <span title="Ждёт оплаты больше суток">⏰</span>' : '') . '</td><td>' . esc_html(wc_format_datetime($o->get_date_created(), 'd.m H:i')) . '</td><td>' . esc_html($o->get_billing_first_name()) . '</td><td>' . esc_html($o->get_billing_phone()) . '</td><td>' . (dm_is_pickup($o) ? '🏠 Самовывоз' : '📦 Доставка') . '</td><td>' . esc_html(implode('; ', $names)) . '</td><td>' . esc_html(dm_asm_money($o->get_total())) . '</td>';
-        echo '<td><a class="button button-primary" href="' . esc_url($o->get_edit_order_url()) . '">Собрать</a></td></tr>';
+        echo '<td><a class="button button-primary" href="' . esc_url(add_query_arg('dm_focus', '1', $o->get_edit_order_url())) . '">Собрать</a></td></tr>';
     }
     echo '</tbody></table>';
 }
@@ -418,4 +426,13 @@ add_action('woocommerce_order_status_on-hold', function ($order_id) {
     $order->update_meta_data('_dm_new_mail', 1);
     $order->add_order_note($ok ? 'Клиенту отправлено письмо «Заказ принят» на ' . $order->get_billing_email() : 'ПИСЬМО «ЗАКАЗ ПРИНЯТ» НЕ УШЛО на ' . $order->get_billing_email());
     $order->save();
+});
+
+
+/* Режим «только сборка»: на странице заказа прячем лишнее, пока идёт сборка. Включается кнопкой «Собрать», выключается ссылкой. */
+add_action('admin_head', function () {
+    $scr = function_exists('get_current_screen') ? get_current_screen() : null;
+    if (!$scr || strpos((string) $scr->id, 'order') === false) return;
+    echo '<style>body.dm-focus #woocommerce-order-data,body.dm-focus #woocommerce-order-items,body.dm-focus #postcustom,body.dm-focus #order_custom,body.dm-focus #woocommerce-order-downloads,body.dm-focus #woocommerce-order-source-data,body.dm-focus #woocommerce-order-attribution{display:none!important}#dm-focus-bar{background:#eef6ee;border:1px solid #cfe0d2;border-radius:8px;padding:8px 14px;margin:0 0 10px}</style>';
+    echo '<script>document.addEventListener("DOMContentLoaded",function(){var q=location.search.match(/dm_focus=(\d)/),on;try{if(q){sessionStorage.setItem("dm_focus",q[1])}on=sessionStorage.getItem("dm_focus")==="1"}catch(e){on=q&&q[1]==="1"}var box=document.getElementById("dm_asm");if(!box){return}var bar=document.createElement("div");bar.id="dm-focus-bar";box.querySelector(".inside").insertBefore(bar,box.querySelector(".inside").firstChild);function set(v){document.body.classList.toggle("dm-focus",v);try{sessionStorage.setItem("dm_focus",v?"1":"0")}catch(e){}bar.innerHTML=v?"Показана только сборка. <a href=\"#\" id=\"dm-full\">Показать весь заказ</a>":"Показан весь заказ. <a href=\"#\" id=\"dm-full\">Только сборка</a>";document.getElementById("dm-full").onclick=function(e){e.preventDefault();set(!document.body.classList.contains("dm-focus"))}}set(on);if(on){box.scrollIntoView()}})</script>';
 });
