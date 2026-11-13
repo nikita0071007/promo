@@ -114,7 +114,7 @@ function dm_asm_box($p) {
     echo '<br>' . ($pickup ? 'Заберёт сам: ' . esc_html(DM_PICKUP_ADDR) : 'Адрес: ' . esc_html($order->get_billing_address_1()));
     if ($note) echo '<br><strong>Комментарий клиента:</strong> ' . esc_html($note);
     echo '<br><button type="button" class="button" id="dm-print" style="margin-top:6px">🖨 Распечатать лист сборки</button></div>';
-    echo '<style>#dm_asm .inside{background:#f4efe1;margin:0;padding:14px}#dm_asm h3{background:#fffdf6;border:1px solid #e4dbc0;border-radius:8px;padding:8px 12px}#dm_asm .dm-asm,#dm_asm details,#dm_asm .tot{background:#fffdf6}#dm_asm .dm-asm td,#dm_asm .dm-asm th{border-bottom:1px solid #ece4cb}.dm-asm td,.dm-asm th{padding:6px 8px;text-align:left}.dm-asm td{vertical-align:middle}.dm-asm input.dm-w{width:130px;font-size:18px;padding:8px 10px;text-align:right}.dm-asm .dm-hint{display:block;font-size:12px;color:#7a6a3a;margin-top:3px;min-height:15px}.dm-asm .dm-sum{font-size:17px;font-weight:700;color:#1f5a35;white-space:nowrap}.dm-asm tbody tr{background:#fffaf0}.dm-asm .tot{font-size:15px;margin:10px 0}</style>';
+    echo '<style>@media(max-width:782px){#dm_asm .inside{padding:10px}.dm-asm thead{display:none}.dm-asm,.dm-asm tbody,.dm-asm tr,.dm-asm td{display:block;width:100%}.dm-asm tr{border:1px solid #d8cfae;border-radius:10px;margin:0 0 10px;padding:8px 10px}.dm-asm td{padding:4px 0!important;border:0!important}.dm-asm td:nth-child(1){font-weight:700;font-size:16px}.dm-asm td:nth-child(2),.dm-asm td:nth-child(3){display:inline-block;width:auto;margin-right:12px;color:#555}.dm-asm td:nth-child(2)::before{content:"Фасовка: "}.dm-asm td:nth-child(3)::before{content:"Кол-во: "}.dm-asm td:nth-child(4)::before{content:"Вес по факту:";display:block;font-size:12px;color:#555}.dm-asm input.dm-w{width:100%!important}.dm-asm td:nth-child(5)::before{content:"Мёд: ";font-weight:400;color:#555}.dm-asm td:nth-child(6)::before{content:"Тара:";display:block;font-size:12px;color:#555}.dm-asm select.dm-tk{width:100%;max-width:100%!important;margin-bottom:6px}.dm-asm .dm-tq{width:80px!important}#dm_asm .button,#dm_asm .button-hero{display:block;width:100%;text-align:center;margin:6px 0;padding:6px 0;font-size:16px;height:auto}#dm_asm input[type=url]{font-size:16px}}#dm_asm .inside{background:#f4efe1;margin:0;padding:14px}#dm_asm h3{background:#fffdf6;border:1px solid #e4dbc0;border-radius:8px;padding:8px 12px}#dm_asm .dm-asm,#dm_asm details,#dm_asm .tot{background:#fffdf6}#dm_asm .dm-asm td,#dm_asm .dm-asm th{border-bottom:1px solid #ece4cb}.dm-asm td,.dm-asm th{padding:6px 8px;text-align:left}.dm-asm td{vertical-align:middle}.dm-asm input.dm-w{width:130px;font-size:18px;padding:8px 10px;text-align:right}.dm-asm .dm-hint{display:block;font-size:12px;color:#7a6a3a;margin-top:3px;min-height:15px}.dm-asm .dm-sum{font-size:17px;font-weight:700;color:#1f5a35;white-space:nowrap}.dm-asm tbody tr{background:#fffaf0}.dm-asm .tot{font-size:15px;margin:10px 0}</style>';
     $others = (float) $order->get_total();
     foreach ($lines as $l) $others -= (float) $l['item']->get_total();
     $manual = '';
@@ -317,7 +317,7 @@ add_action('admin_menu', function () {
 
 function dm_asm_table($orders, $empty) {
     if (!$orders) { echo '<p>' . esc_html($empty) . '</p>'; return; }
-    echo '<table class="widefat striped"><thead><tr><th>№</th><th>Дата</th><th>Клиент</th><th>Телефон</th><th>Получение</th><th>Состав</th><th>Сумма</th><th></th></tr></thead><tbody>';
+    echo '<table class="widefat striped dm-list"><thead><tr><th>№</th><th>Дата</th><th>Клиент</th><th>Телефон</th><th>Получение</th><th>Состав</th><th>Сумма</th><th></th></tr></thead><tbody>';
     foreach ($orders as $o) {
         $names = array();
         foreach ($o->get_items('line_item') as $it) $names[] = $it->get_name() . ' (' . $it->get_meta('Фасовка') . ') × ' . $it->get_quantity();
@@ -331,6 +331,7 @@ function dm_asm_table($orders, $empty) {
 
 function dm_asm_page() {
     echo '<div class="wrap"><h1>Сборка заказов</h1>';
+    echo '<style>@media(max-width:782px){.dm-list thead{display:none}.dm-list,.dm-list tbody,.dm-list tr,.dm-list td{display:block;width:100%}.dm-list tr{border:1px solid #d8cfae;border-radius:10px;margin:0 0 12px;padding:8px 10px;background:#fffdf6}.dm-list td{padding:3px 0!important;border:0!important;font-size:15px}.dm-list td:nth-child(1){font-weight:700;font-size:17px}.dm-list td:nth-child(2)::before{content:"Дата: ";color:#777}.dm-list td:nth-child(3)::before{content:"Клиент: ";color:#777}.dm-list td:nth-child(4)::before{content:"Телефон: ";color:#777}.dm-list td:nth-child(6)::before{content:"Состав: ";color:#777}.dm-list td:nth-child(7){font-weight:700}.dm-list td:nth-child(7)::before{content:"Сумма: ";font-weight:400;color:#777}.dm-list td:nth-child(8) .button{width:100%;text-align:center;font-size:17px;padding:8px 0;margin-top:6px}}</style>';
     echo '<h2>Ждут взвешивания</h2>';
     dm_asm_table(wc_get_orders(array('status' => array('on-hold'), 'limit' => 50, 'orderby' => 'date', 'order' => 'ASC')), 'Новых заказов нет.');
     echo '<h2 style="margin-top:28px">Ждут оплаты</h2>';
