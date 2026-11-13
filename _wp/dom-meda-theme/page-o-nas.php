@@ -9,7 +9,7 @@
 <p>Мы хотим, чтобы вы видели, откуда приходит мёд и кто его делает. Фотографии с нашей пасеки:</p>
 <div class="about-gal">
 <figure class="w"><img src="<?php echo esc_url(dm_img('about-paseka')); ?>" alt="Наша пасека в горах Алтая" loading="lazy"><figcaption>Наша пасека в горах Алтая</figcaption></figure>
-<figure><img src="<?php echo esc_url(dm_img('api2')); ?>" alt="Хозяин пасеки с внуком у улья" loading="lazy"><figcaption>Хозяин с внуком у улья</figcaption></figure>
+<figure><img src="<?php echo esc_url(dm_img('api2')); ?>" alt="Хозяин пасеки с внуком у улья" loading="lazy"><figcaption>Передаём дело по наследству</figcaption></figure>
 <figure><img src="<?php echo esc_url(dm_img('about-team')); ?>" alt="Пчеловоды на пасеке" loading="lazy"><figcaption>Пчеловоды на пасеке</figcaption></figure>
 <figure><img src="<?php echo esc_url(dm_img('about-roy-man')); ?>" alt="Пчеловод с рамкой, на которой сидит рой" loading="lazy"><figcaption>Пчеловод с роем</figcaption></figure>
 <figure><img src="<?php echo esc_url(dm_img('about-roy')); ?>" alt="Пчелиный рой" loading="lazy"><figcaption>Пчелиный рой</figcaption></figure>
