@@ -64,8 +64,14 @@ function dm_asm_w($raw) {
 
 /* Тара по строке: то, что вписали в панели (можно 0), иначе по прайсу. Сумма за всю строку (с учётом количества). */
 function dm_asm_line_tare($l) {
-    $v = $l['item']->get_meta('_dm_tare');
-    return ($v === '' || $v === null || $v === false) ? $l['tare'] * $l['qty'] : max(0, (float) $v);
+    $k = $l['item']->get_meta('_dm_tk');
+    if ($k === 'none') return 0;
+    $t = dm_asm_tares();
+    if ($k !== '' && isset($t[$k])) {
+        $q = (int) $l['item']->get_meta('_dm_tq');
+        return $t[$k][1] * ($q > 0 ? $q : $l['qty']);
+    }
+    return $l['tare'] * $l['qty'];
 }
 
 function dm_asm_tares() {
@@ -108,7 +114,7 @@ function dm_asm_box($p) {
     echo '<br>' . ($pickup ? 'Заберёт сам: ' . esc_html(DM_PICKUP_ADDR) : 'Адрес: ' . esc_html($order->get_billing_address_1()));
     if ($note) echo '<br><strong>Комментарий клиента:</strong> ' . esc_html($note);
     echo '<br><button type="button" class="button" id="dm-print" style="margin-top:6px">🖨 Распечатать лист сборки</button></div>';
-    echo '<style>.dm-asm td,.dm-asm th{padding:6px 8px;text-align:left}.dm-asm td{vertical-align:middle}.dm-asm input.dm-w{width:130px;font-size:18px;padding:8px 10px;text-align:right}.dm-asm .dm-hint{display:block;font-size:12px;color:#7a6a3a;margin-top:3px;min-height:15px}.dm-asm .dm-sum{font-size:17px;font-weight:700;color:#1f5a35;white-space:nowrap}.dm-asm tbody tr{background:#fffaf0}.dm-asm .tot{font-size:15px;margin:10px 0}</style>';
+    echo '<style>#dm_asm .inside{background:#f4efe1;margin:0;padding:14px}#dm_asm h3{background:#fffdf6;border:1px solid #e4dbc0;border-radius:8px;padding:8px 12px}#dm_asm .dm-asm,#dm_asm details,#dm_asm .tot{background:#fffdf6}#dm_asm .dm-asm td,#dm_asm .dm-asm th{border-bottom:1px solid #ece4cb}.dm-asm td,.dm-asm th{padding:6px 8px;text-align:left}.dm-asm td{vertical-align:middle}.dm-asm input.dm-w{width:130px;font-size:18px;padding:8px 10px;text-align:right}.dm-asm .dm-hint{display:block;font-size:12px;color:#7a6a3a;margin-top:3px;min-height:15px}.dm-asm .dm-sum{font-size:17px;font-weight:700;color:#1f5a35;white-space:nowrap}.dm-asm tbody tr{background:#fffaf0}.dm-asm .tot{font-size:15px;margin:10px 0}</style>';
     $others = (float) $order->get_total();
     foreach ($lines as $l) $others -= (float) $l['item']->get_total();
     $manual = '';
@@ -123,13 +129,18 @@ function dm_asm_box($p) {
         echo '<p>В заказе нет товаров на развес: взвешивать нечего. Ссылку на оплату можно отправить сразу.</p>';
     } else {
         echo '<p class="description">Вес можно писать в граммах (518) или килограммах (0,518). Вес общий для всех банок одной позиции. Тару можно поменять или поставить 0.</p>';
-        echo '<table class="dm-asm widefat"><thead><tr><th>Товар</th><th>Фасовка в заказе</th><th>Кол-во</th><th>Вес по факту</th><th>Мёд, ₽</th><th>Тара, ₽</th></tr></thead><tbody>';
+        echo '<table class="dm-asm widefat"><thead><tr><th>Товар</th><th>Фасовка в заказе</th><th>Кол-во</th><th>Вес по факту</th><th>Мёд, ₽</th><th>Тара: выберите и количество банок</th></tr></thead><tbody>';
         foreach ($lines as $id => $l) {
             $w = $l['item']->get_meta('_dm_w');
             echo '<tr><td>' . esc_html($l['name']) . '</td><td>' . esc_html($l['label']) . '</td><td>' . (int) $l['qty'] . '</td>';
             echo '<td><input type="text" inputmode="decimal" autocomplete="off" class="dm-w" name="dm_w[' . (int) $id . ']" value="' . esc_attr($w) . '" placeholder="примерно ' . (int) $l['approx'] . ' г" data-kg="' . esc_attr($l['kg']) . '" ><span class="dm-hint"></span></td>';
             echo '<td class="dm-sum">' . esc_html(dm_asm_money($l['item']->get_total())) . '</td>';
-            echo '<td><input type="number" min="0" step="1" class="dm-t" name="dm_t[' . (int) $id . ']" value="' . esc_attr((int) dm_asm_line_tare($l)) . '" style="width:80px;font-size:16px;padding:6px 8px;text-align:right"></td></tr>';
+            $k0 = $l['item']->get_meta('_dm_tk'); $q0 = (int) $l['item']->get_meta('_dm_tq'); if ($q0 < 1) $q0 = $l['qty'];
+            $def = $l['tare'];
+            echo '<td class="dm-tc"><select class="dm-tk" name="dm_tk[' . (int) $id . ']" style="max-width:190px">';
+            echo '<option value="" data-p="' . (int) $def . '"' . selected($k0, '', false) . '>как в заказе (' . (int) $def . ' ₽)</option>';
+            foreach (dm_asm_tares() as $kk => $tt0) echo '<option value="' . esc_attr($kk) . '" data-p="' . (int) $tt0[1] . '"' . selected($k0, $kk, false) . '>' . esc_html($tt0[0] . ' — ' . $tt0[1] . ' ₽') . '</option>';
+            echo '<option value="none" data-p="0"' . selected($k0, 'none', false) . '>без тары</option></select> × <input type="number" min="1" max="50" class="dm-tq" name="dm_tq[' . (int) $id . ']" value="' . (int) $q0 . '" style="width:56px"> шт <strong class="dm-tsum" style="margin-left:6px"></strong></td></tr>';
         }
         echo '</tbody></table>';
     }
@@ -186,11 +197,11 @@ function f(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g," 
 var tot=document.getElementById("dm-tot"),numEl=document.getElementById("dm-sum-num"),btn=document.getElementById("dm-copy-sum");
 var msg=document.getElementById("dm-msg"),url=document.querySelector("input[name=dm_pay_url]");
 function pw(v){var w=parseFloat(String(v).replace(",","."));if(w>0&&w<20)w=w*1000;return Math.round(w)||0}
-function calc(){var t=others;document.querySelectorAll(".dm-mf").forEach(function(c){if(!c.checked)t+=parseFloat(c.dataset.amt)||0});rows.forEach(function(i){var w=pw(i.value);var tr=i.closest("tr");var te=tr.querySelector(".dm-t");var tv=Math.max(0,parseFloat(te.value)||0);var h=i.parentNode.querySelector(".dm-hint");h.textContent=w>0?("= "+w+" г"):"";var s=tr.querySelector(".dm-sum");if(w>0){var v=Math.round(parseFloat(i.dataset.kg)*w/1000);s.textContent=f(v);t+=v+tv}else{t+=(parseFloat((s.textContent||"0").replace(/[^\d]/g,""))||0)+tv}});return Math.round(t)}
+function calc(){var t=others;document.querySelectorAll(".dm-mf").forEach(function(c){if(!c.checked)t+=parseFloat(c.dataset.amt)||0});rows.forEach(function(i){var w=pw(i.value);var tr=i.closest("tr");var sel=tr.querySelector(".dm-tk");var q=Math.max(1,parseInt(tr.querySelector(".dm-tq").value)||1);var tv=(parseFloat(sel.options[sel.selectedIndex].dataset.p)||0)*q;tr.querySelector(".dm-tsum").textContent="= "+f(tv);var h=i.parentNode.querySelector(".dm-hint");h.textContent=w>0?("= "+w+" г"):"";var s=tr.querySelector(".dm-sum");if(w>0){var v=Math.round(parseFloat(i.dataset.kg)*w/1000);s.textContent=f(v);t+=v+tv}else{t+=(parseFloat((s.textContent||"0").replace(/[^\d]/g,""))||0)+tv}});return Math.round(t)}
 function upd(){var t=calc();tot.textContent=f(t);numEl.textContent=t;btn.dataset.v=t;
 msg.value="Здравствуйте"+(msg.dataset.name?", "+msg.dataset.name:"")+"! Ваш заказ №"+msg.dataset.num+" в «Доме мёда» собран и взвешен. Точная сумма: "+f(t)+"."+(info.pickup?"\nЗаказ заберёте сами: "+info.way.replace("САМОВЫВОЗ: ",""):"")+"\nОплатить можно по ссылке (карта МИР, Сбербанк или СБП): "+(url.value||"[вставьте ссылку выше]")+"\nСпасибо, что выбрали нас!"}
 function cp(text,b){var old=b.textContent;function ok(){b.textContent="Скопировано";setTimeout(function(){b.textContent=old},1500)}if(navigator.clipboard){navigator.clipboard.writeText(text).then(ok)}else{var a=document.createElement("textarea");a.value=text;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();ok()}}
-rows.forEach(function(i){i.addEventListener("input",upd)});document.querySelectorAll(".dm-t,.dm-mf").forEach(function(i){i.addEventListener("input",upd);i.addEventListener("change",upd)});document.querySelectorAll(".dm-w,.dm-t").forEach(function(i){i.addEventListener("keydown",function(e){if(e.key==="Enter")e.preventDefault()})});url.addEventListener("input",upd);
+rows.forEach(function(i){i.addEventListener("input",upd)});document.querySelectorAll(".dm-tk,.dm-tq,.dm-mf").forEach(function(i){i.addEventListener("input",upd);i.addEventListener("change",upd)});document.querySelectorAll(".dm-w,.dm-tq").forEach(function(i){i.addEventListener("keydown",function(e){if(e.key==="Enter")e.preventDefault()})});url.addEventListener("input",upd);
 btn.addEventListener("click",function(){var v=btn.dataset.v;cp(v,btn);setTimeout(upd,1600)});
 document.getElementById("dm-copy-msg").addEventListener("click",function(){cp(msg.value,this)});
 function e(x){return String(x).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
@@ -231,10 +242,12 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
         $ws = isset($_POST['dm_w']) && is_array($_POST['dm_w']) ? wp_unslash($_POST['dm_w']) : array();
         $changed = array();
         $rm = isset($_POST['dm_rm_fee']) && is_array($_POST['dm_rm_fee']) ? array_map('intval', $_POST['dm_rm_fee']) : array();
-        $ts = isset($_POST['dm_t']) && is_array($_POST['dm_t']) ? wp_unslash($_POST['dm_t']) : array();
+        $tks = isset($_POST['dm_tk']) && is_array($_POST['dm_tk']) ? wp_unslash($_POST['dm_tk']) : array();
+        $tqs = isset($_POST['dm_tq']) && is_array($_POST['dm_tq']) ? wp_unslash($_POST['dm_tq']) : array();
+        $ok_k = array_merge(array_keys(dm_asm_tares()), array('none'));
         foreach ($order->get_items('fee') as $fid => $f) { if ($f->get_meta('_dm_auto_tare') || in_array((int) $fid, $rm, true)) $order->remove_item($fid); }
         foreach (dm_asm_lines($order) as $id => $l) {
-            if (isset($ts[$id]) && $ts[$id] !== '') { $l['item']->update_meta_data('_dm_tare', max(0, round((float) str_replace(',', '.', $ts[$id])))); $l['item']->save(); }
+            if (isset($tks[$id])) { $kk = sanitize_key($tks[$id]); $l['item']->update_meta_data('_dm_tk', in_array($kk, $ok_k, true) ? $kk : ''); $l['item']->update_meta_data('_dm_tq', isset($tqs[$id]) ? max(1, min(50, (int) $tqs[$id])) : $l['qty']); $l['item']->save(); }
             $tt = dm_asm_line_tare($l);
             if ($tt > 0) {
                 $fee = new WC_Order_Item_Fee();
